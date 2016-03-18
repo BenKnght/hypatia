@@ -1,0 +1,29 @@
+Star: hip=7444
+hd = 9712
+bd = B+40  328
+Spec Type = K1III
+Vmag = [ 6.5534]
+dist (pc) = 120.05
+RA/Dec = (23.97,41.08)
+Disk component: thin
+FeH -0.17 [Adamow et al. (2014)]
+OH 0.07 [Adamow et al. (2014)]
+MgH 0.1 [Adamow et al. (2014)]
+AlH -0.03 [Adamow et al. (2014)]
+CaH -0.11 [Adamow et al. (2014)]
+TiH 0.21 [Adamow et al. (2014)]
+
+Star: hip=53878
+hd =
+bd = B+43 2070
+Spec Type = K0
+Vmag = [ 9.0826]
+dist (pc) = 121.51
+RA/Dec = (165.34,43.18)
+Disk component: N/A
+FeH -0.1 [Adamow et al. (2014)]
+OH 0.05 [Adamow et al. (2014)]
+MgH 0.04 [Adamow et al. (2014)]
+AlH -0.07 [Adamow et al. (2014)]
+CaH -0.12 [Adamow et al. (2014)]
+TiH -0.03 [Adamow et al. (2014)]
