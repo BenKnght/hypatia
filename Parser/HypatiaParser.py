@@ -1,7 +1,9 @@
 import re
 
-from Model.StarModel import Star
+from Model.Star import Star
 from Parser import Parser
+from Model.Catalogue import Catalogue
+from Model.Composition import Composition
 
 
 class HypatiaParser(Parser):
@@ -34,6 +36,7 @@ class HypatiaParser(Parser):
             for raw_star in raw_stars:
                 try:
                     s = Star(None)
+                    elements = []  # a list of catalogue and composition instances for the star
                     raw_star_attrs = raw_star.split("\n")  # Assumption: Each attribute of the star is on its own line
                     for raw_attr in raw_star_attrs:
                         # Split attributes and values of the star. They are separated by a '=' or ':'
@@ -51,9 +54,16 @@ class HypatiaParser(Parser):
                                 else:
                                     s.set(self.hypatia_column_map[key], value)
                         else:
-                            # composition attributes of star
-                            pass
-                    yield s
+                            comp_cat = re.match(r'(\w+)(.*)\[(.+)et al\. \((.*)\)\]', raw_attr)
+                            if comp_cat:
+                                element, value, author, year = comp_cat.groups()
+                                catalogue = Catalogue(author, year)
+                                composition = Composition(None, None, element, value)
+                                elements.append([catalogue, composition])
+                            else:
+                                # TODO: Log unknown composition => raw_attr
+                                pass
+                    yield [s, elements]
                 except:
                     # TODO: Log that a star has been skipped
                     raise
