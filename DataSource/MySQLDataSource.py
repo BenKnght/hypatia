@@ -25,6 +25,32 @@ class MySQL(DataSource):
         """.format(table, ','.join(columns), values)
 
     @staticmethod
+    def select(table, columns, operators, condition_types=[]):
+        """
+        MySQL select command
+        :param table: source table on which SELECT has to be executed
+        :param columns: list of columns in-order participating in WHERE condition
+        :param operators: list of operators joining the columns and values
+        :param condition_types: list of 'AND' or 'OR' terms
+        :return: Returns entire tuples which match the selection criteria
+        """
+        if len(columns) is not len(operators) is not len(condition_types) - 1:
+            raise ValueError("Number of conditions, values and conditions do not match")
+
+        conditions = ["{} {} %s".format(columns[i], op) for i, op in enumerate(operators)]
+        if len(condition_types) > 0:
+            conditions_and_types = [None] * (2 * len(conditions) - 1)
+            conditions_and_types[::2] = conditions
+            conditions_and_types[1::2] = condition_types
+        else:
+            conditions_and_types = conditions
+        return """
+        SELECT *
+        FROM {}
+        WHERE {}
+        """.format(table, ' '.join(conditions_and_types))
+
+    @staticmethod
     def get_connection():
         try:
             # TODO: Do not use root to connect
