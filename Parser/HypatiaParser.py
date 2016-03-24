@@ -1,4 +1,5 @@
 import re
+import logging
 
 from Model.Star import Star
 from Parser import Parser
@@ -8,7 +9,7 @@ from Model.Composition import Composition
 
 class HypatiaParser(Parser):
     def __init__(self, filepath):
-        Parser.__init__(self, filepath)
+        super(HypatiaParser, self).__init__(filepath)
 
     # Note: Keys should be in lower case
     hypatia_column_map = {
@@ -33,8 +34,10 @@ class HypatiaParser(Parser):
         """
         with open(self.path) as f:
             raw_stars = f.read().split("\n\n")  # Assumption: Each star is separated by ONE blank line
-            for raw_star in raw_stars:
+            logging.info("%s stars found in the file", len(raw_stars))
+            for i, raw_star in enumerate(raw_stars):
                 try:
+                    logging.info("Started parsing star (%s)", i)
                     s = Star(None)
                     elements = []  # a list of catalogue and composition instances for the star
                     raw_star_attrs = raw_star.split("\n")  # Assumption: Each attribute of the star is on its own line
@@ -54,17 +57,16 @@ class HypatiaParser(Parser):
                                 else:
                                     s.set(self.hypatia_column_map[key], value)
                         else:
-                            comp_cat = re.match(r'(\w+)(.*)\[(.+)et al\. \((.*)\)\]', raw_attr)
+                            comp_cat = re.match(r'(\w+)(.*)\[(.+)(et al\.)? \((.*)\)\]', raw_attr)
                             if comp_cat:
-                                element, value, author, year = comp_cat.groups()
+                                element, value, author, attribution, year = comp_cat.groups()
                                 catalogue = Catalogue(author, year)
                                 composition = Composition(None, None, element, value)
                                 elements.append([catalogue, composition])
                             else:
-                                # TODO: Log unknown composition => raw_attr
-                                pass
+                                logging.warning('Unknown composition of star, "%s". Line unable to parse: "%s"',
+                                                s.columns['hip'], raw_attr)
                     yield [s, elements]
                 except:
-                    # TODO: Log that a star has been skipped
+                    # Pass the exception to be handled at the higher level
                     raise
-                    pass

@@ -20,7 +20,7 @@ class Catalogue(Model):
         :param year: [required] Year(s) as a string published
         :return: instance
         """
-        Model.__init__(self)
+        super(Catalogue, self).__init__()
         self.columns.update(self.DEFAULTS)
         self.columns['author'] = author
         self.columns['year'] = year

@@ -30,7 +30,7 @@ class Star(Model):
         :param attr_values: all other attributes of the star as a dictionary. refer defaults for available attributes
         :return: instance
         """
-        Model.__init__(self)
+        super(Star, self).__init__()
         self.columns.update(self.DEFAULTS)
         self.columns['hip'] = hip
         if attr_values:

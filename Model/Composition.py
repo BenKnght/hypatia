@@ -23,7 +23,7 @@ class Composition(Model):
         :param value: [required] unique id for the star. If not set now, has to be set later
         :return: instance
         """
-        Model.__init__(self)
+        super(Composition, self).__init__()
         self.columns.update(self.DEFAULTS)
         self.columns['hip'] = hip
         self.columns['cid'] = cid

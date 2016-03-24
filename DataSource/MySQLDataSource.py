@@ -1,12 +1,13 @@
 import mysql.connector
 from mysql.connector import errorcode
+import logging
 
 from DataSource import DataSource
 
 
 class MySQL(DataSource):
     def __init__(self):
-        DataSource.__init__(self)
+        super(MySQL, self).__init__()
 
     @staticmethod
     def insert(table, columns):
@@ -59,8 +60,8 @@ class MySQL(DataSource):
             return connection
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-                print("Something is wrong with your user name or password")
+                logging.warning("Something is wrong with your user name or password")
             elif err.errno == errorcode.ER_BAD_DB_ERROR:
-                print("Database does not exist")
+                logging.warning("Database does not exist")
             else:
-                print(err)
+                logging.warning(err)
