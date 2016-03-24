@@ -33,8 +33,8 @@ class HypatiaParser(Parser):
         :return: Star instance
         """
         with open(self.path) as f:
-            raw_stars = f.read().split("\n\n")  # Assumption: Each star is separated by ONE blank line
-            logging.info("%s stars found in the file", len(raw_stars))
+            raw_stars = f.read().strip().split("\n\n")  # Assumption: Each star is separated by ONE blank line
+            logging.info("%s stars found in the file\n", len(raw_stars))
             for i, raw_star in enumerate(raw_stars):
                 try:
                     logging.info("Started parsing star (%s)", i)
@@ -57,10 +57,10 @@ class HypatiaParser(Parser):
                                 else:
                                     s.set(self.hypatia_column_map[key], value)
                         else:
-                            comp_cat = re.match(r'(\w+)(.*)\[(.+)(et al\.)? \((.*)\)\]', raw_attr)
+                            comp_cat = re.match(r'(\w+)(.*)\[(.+)\]', raw_attr)
                             if comp_cat:
-                                element, value, author, attribution, year = comp_cat.groups()
-                                catalogue = Catalogue(author, year)
+                                element, value, author_year = comp_cat.groups()
+                                catalogue = Catalogue(author_year)
                                 composition = Composition(None, None, element, value)
                                 elements.append([catalogue, composition])
                             else:

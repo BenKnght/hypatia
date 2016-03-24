@@ -9,21 +9,18 @@ class Catalogue(Model):
     TABLE = 'catalogue'
     DEFAULTS = {
         'id': None,
-        'author': None,
-        'year': None,
+        'author_year': None,
     }
 
-    def __init__(self, author, year):
+    def __init__(self, author_year):
         """
         initializes a catalogue object
         :param author: [required] Author of the catalogue, paper
-        :param year: [required] Year(s) as a string published
         :return: instance
         """
         super(Catalogue, self).__init__()
         self.columns.update(self.DEFAULTS)
-        self.columns['author'] = author
-        self.columns['year'] = year
+        self.columns['author_year'] = author_year
 
     def find(self, connection, only_one=True):
         """
@@ -32,11 +29,10 @@ class Catalogue(Model):
         :param only_one: if True, only the first record returned by DB is returned, else all are returned
         :return: record(s) if found, else None
         """
-        find_catalogue = MySQL.select(self.TABLE, ['author', 'year'],
-                                      ['=', '='], ['AND'])
+        find_catalogue = MySQL.select(self.TABLE, ['author_year'],
+                                      ['='], [])
         return super(Catalogue, self).find(find_catalogue,
-                                           [self.columns['author'].strip(), self.columns['year']], connection,
-                                           only_one)
+                                           [self.columns['author_year'].strip()], connection, only_one)
 
     def upsert(self, connection):
         """
