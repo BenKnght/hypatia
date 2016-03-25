@@ -7,9 +7,9 @@ import Config
 
 def main():
     Config.setup_logging()
-    c = MySQL.get_connection()
-    # p = HypatiaParser('/Volumes/350GB/Projects/RA/Assets/test_inp.txt')
-    p = HypatiaParser('/Volumes/350GB/Projects/RA/Assets/hypatia_norm_16_01_10.txt')
+    c = MySQL.get_connection('astronomy_test')
+    p = HypatiaParser('/Volumes/350GB/Projects/RA/Assets/test_inp.txt')
+    # p = HypatiaParser('/Volumes/350GB/Projects/RA/Assets/hypatia_norm_16_01_10.txt')
     if c:
         for star, elements in p.next():
             try:

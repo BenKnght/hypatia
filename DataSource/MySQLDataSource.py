@@ -52,11 +52,11 @@ class MySQL(DataSource):
         """.format(table, ' '.join(conditions_and_types))
 
     @staticmethod
-    def get_connection():
+    def get_connection(database='astronomy'):
         try:
             # TODO: Do not use root to connect
             # TODO: Have a secrets file and save these values
-            connection = mysql.connector.connect(user='root', password='root', database='astronomy')
+            connection = mysql.connector.connect(user='root', password='root', database=database)
             return connection
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
