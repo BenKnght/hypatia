@@ -44,7 +44,7 @@ class Star(Model):
         :return: record(s) if found, else None
         """
         find_star = MySQL.select(self.TABLE, ['hip'], ['='])
-        return super(Star, self).find(find_star, [self.columns['hip']], connection, only_one)
+        return super(Star, self).find(find_star, {'hip': self.columns['hip']}, connection, only_one)
 
     def upsert(self, connection):
         """
@@ -56,3 +56,8 @@ class Star(Model):
         if not inserted:
             rid = self.columns['hip']
         return rid
+
+    def update(self, connection):
+        self.columns.pop('created_at', None)  # So that original timestamp is not overwritten with current one
+        update_star = MySQL.update(self.TABLE, self.columns.keys(), ['hip'], ['='])
+        return super(Star, self).update(update_star, connection)

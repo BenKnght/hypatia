@@ -29,10 +29,9 @@ class Catalogue(Model):
         :param only_one: if True, only the first record returned by DB is returned, else all are returned
         :return: record(s) if found, else None
         """
-        find_catalogue = MySQL.select(self.TABLE, ['author_year'],
-                                      ['='], [])
+        find_catalogue = MySQL.select(self.TABLE, ['author_year'], ['='])
         return super(Catalogue, self).find(find_catalogue,
-                                           [self.columns['author_year'].strip()], connection, only_one)
+                                           {'author_year': self.columns['author_year'].strip()}, connection, only_one)
 
     def upsert(self, connection):
         """
@@ -42,7 +41,12 @@ class Catalogue(Model):
         """
         inserted, rid = super(Catalogue, self).upsert(connection)
         if not inserted:
-            # assumption: first column returned from select * is always `id` which is the primary key for this table
+            # Assumption 251022: first column returned from select * is always `id` which is the primary key for this table
             self.columns['id'] = rid[0]
             rid = rid[0]  # set rid to be record id instead of entire record
         return rid
+
+    def update(self, connection):
+        self.columns.pop('created_at', None)  # So that original timestamp is not overwritten with current one
+        update_catalogue = MySQL.update(self.TABLE, self.columns.keys(), ['author_year'], ['='])
+        return super(Catalogue, self).update(update_catalogue, connection)

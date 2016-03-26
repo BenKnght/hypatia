@@ -33,14 +33,14 @@ class HypatiaParser(Parser):
         :return: Star instance
         """
         with open(self.path) as f:
-            raw_stars = f.read().strip().split("\n\n")  # Assumption: Each star is separated by ONE blank line
+            raw_stars = f.read().strip().split("\n\n")  # Assumption 251020: Each star is separated by ONE blank line
             logger.info("%s stars found in the file\n", len(raw_stars))
             for i, raw_star in enumerate(raw_stars):
                 try:
                     logger.info("Started parsing star (%s)", i)
                     s = Star(None)
                     elements = []  # a list of catalogue and composition instances for the star
-                    raw_star_attrs = raw_star.split("\n")  # Assumption: Each attribute of the star is on its own line
+                    raw_star_attrs = raw_star.split("\n")  # Assumption 251021: Each attribute of the star is on its own line
                     for raw_attr in raw_star_attrs:
                         # Split attributes and values of the star. They are separated by a '=' or ':'
                         # Once split, the last entity is value and the last but one is the key

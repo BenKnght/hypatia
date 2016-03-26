@@ -40,7 +40,8 @@ class Composition(Model):
         find_composition = MySQL.select(self.TABLE, ['hip', 'cid', 'element'],
                                         ['=', '=', '='], ['AND', 'AND'])
         return super(Composition, self).find(find_composition,
-                                             [self.columns['hip'], self.columns['cid'], self.columns['element'].strip()],
+                                             {'hip': self.columns['hip'], 'cid': self.columns['cid'],
+                                              'element': self.columns['element'].strip()},
                                              connection, only_one)
 
     def upsert(self, connection):
@@ -54,3 +55,9 @@ class Composition(Model):
             rid = [self.columns['hip'], self.columns['cid'],
                    self.columns['element']]  # TODO: check if this is the way DB returns on c.lastrowid call
         return rid
+
+    def update(self, connection):
+        self.columns.pop('created_at', None)  # So that original timestamp is not overwritten with current one
+        update_composition = MySQL.update(self.TABLE, self.columns.keys(), ['hip', 'cid', 'element'],
+                                   ['=', '=', '='], ['AND', 'AND'])
+        return super(Composition, self).update(update_composition, connection)

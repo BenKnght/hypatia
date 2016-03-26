@@ -44,14 +44,14 @@ class Model(object):
         if not record:
             return [True, self.save(connection)]
         else:
-            self.update()
-            return [False, record]  # TODO: ideally update() should return this. Remove once update() is implemented
+            self.update(connection)
+            return [False, record]
 
     def find(self, sql_template, values, connection, only_one=True):
         """
         Finds entity using the given SQL
         :param sql_template: sql to execute
-        :param values: raw values to be inserted in the sql template
+        :param values: dictionary of values with key as the column name and value as whatever value is required to find
         :param connection: open connection
         :param only_one: if set, only one record is returned if found
         :return: instance(s) if found, else None
@@ -65,5 +65,17 @@ class Model(object):
         c.close()
         return records
 
-    def update(self):
+    def update(self, sql_template, connection):
+        """
+        update entity to data store
+        placeholders in the SQL template are safely replaced by column values of the Model
+        :param sql_template: SQL template string with placeholders for values
+        :param connection: open connection
+        :return: True always
+        """
         self.columns['updated_at'] = datetime.datetime.today()
+        c = connection.cursor()
+        c.execute(sql_template, self.columns)
+        connection.commit()  # TODO: Decide if this is OK as rollbacks can be difficult
+        c.close()
+        return True
