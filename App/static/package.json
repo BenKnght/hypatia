@@ -1,0 +1,19 @@
+{
+  "name": "astronomy_viz",
+  "version": "1.0.0",
+  "description": "Astronomy Visualizations",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nitin Pasumarthy",
+  "license": "MIT",
+  "dependencies": {
+    "babel": "^6.5.2",
+    "babel-core": "^6.7.4",
+    "babel-polyfill": "^6.7.4",
+    "blueimp-file-upload": "^9.12.1",
+    "bootstrap": "^3.3.6",
+    "jquery": "^2.2.2"
+  }
+}

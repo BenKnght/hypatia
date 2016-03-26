@@ -173,3 +173,5 @@ fabric.properties
 # Nitin's 
 Assets/hip_classes_norm_test.py
 .idea/
+node_modules/
+datafiles/

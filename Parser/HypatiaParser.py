@@ -1,6 +1,6 @@
 import re
-import logging
 
+from Config import logger
 from Model.Star import Star
 from Parser import Parser
 from Model.Catalogue import Catalogue
@@ -34,10 +34,10 @@ class HypatiaParser(Parser):
         """
         with open(self.path) as f:
             raw_stars = f.read().strip().split("\n\n")  # Assumption: Each star is separated by ONE blank line
-            logging.info("%s stars found in the file\n", len(raw_stars))
+            logger.info("%s stars found in the file\n", len(raw_stars))
             for i, raw_star in enumerate(raw_stars):
                 try:
-                    logging.info("Started parsing star (%s)", i)
+                    logger.info("Started parsing star (%s)", i)
                     s = Star(None)
                     elements = []  # a list of catalogue and composition instances for the star
                     raw_star_attrs = raw_star.split("\n")  # Assumption: Each attribute of the star is on its own line
@@ -64,7 +64,7 @@ class HypatiaParser(Parser):
                                 composition = Composition(None, None, element, value)
                                 elements.append([catalogue, composition])
                             else:
-                                logging.warning('Unknown composition of star, "%s". Line unable to parse: "%s"',
+                                logger.warning('Unknown composition of star, "%s". Line unable to parse: "%s"',
                                                 s.columns['hip'], raw_attr)
                     yield [s, elements]
                 except:

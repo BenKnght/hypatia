@@ -1,8 +1,8 @@
 import mysql.connector
 from mysql.connector import errorcode
-import logging
 
 from DataSource import DataSource
+from Config import logger
 
 
 class MySQL(DataSource):
@@ -60,8 +60,8 @@ class MySQL(DataSource):
             return connection
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-                logging.warning("Something is wrong with your user name or password")
+                logger.warning("Something is wrong with your user name or password")
             elif err.errno == errorcode.ER_BAD_DB_ERROR:
-                logging.warning("Database does not exist")
+                logger.warning("Database does not exist")
             else:
-                logging.warning(err)
+                logger.warning(err)
