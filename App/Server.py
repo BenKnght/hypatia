@@ -21,7 +21,12 @@ UPLOADS_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), './dataf
 
 @app.route('/', methods=['GET'])
 def index():
-    return render_template('index.html')
+    return render_template('import.html')
+
+
+@app.route('/visualize', methods=['GET'])
+def visualize():
+    return render_template('visualization.html')
 
 
 @app.route('/log/<filename>', methods=['GET'])
