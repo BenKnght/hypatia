@@ -1,5 +1,6 @@
 import mysql.connector
 from mysql.connector import errorcode
+import os
 
 from DataSource import DataSource
 from Config import logger
@@ -77,10 +78,18 @@ class MySQL(DataSource):
 
     @staticmethod
     def get_connection(database='astronomy'):
+        """
+        Returns an open Database connection
+        Set db_username, db_password and db_name environment variables if defaults are not good
+        :param database: database name to connect to
+        :return: open MySQL connection
+        """
         try:
-            # TODO: Do not use root to connect
-            # TODO: Have a secrets file and save these values
-            connection = mysql.connector.connect(user='root', password='root', database=database)
+            # TODO: Do not use root to connect by default
+            user = os.environ['db_username'] if 'db_username' in os.environ else 'root'
+            password = os.environ['db_password'] if 'db_password' in os.environ else 'root'
+            database = os.environ['db_name'] if 'db_name' in os.environ else database
+            connection = mysql.connector.connect(user=user, password=password, database=database)
             return connection
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
