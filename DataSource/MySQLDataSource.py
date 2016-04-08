@@ -86,10 +86,11 @@ class MySQL(DataSource):
         """
         try:
             # TODO: Do not use root to connect by default
-            user = os.environ['db_username'] if 'db_username' in os.environ else 'root'
-            password = os.environ['db_password'] if 'db_password' in os.environ else 'root'
-            database = os.environ['db_name'] if 'db_name' in os.environ else database
-            connection = mysql.connector.connect(user=user, password=password, database=database)
+            host = os.environ['DB_HOSTNAME'] if 'DB_HOSTNAME' in os.environ else '127.0.0.1'
+            user = os.environ['DB_USERNAME'] if 'DB_USERNAME' in os.environ else 'root'
+            password = os.environ['DB_PASSWORD'] if 'DB_PASSWORD' in os.environ else 'root'
+            database = os.environ['DB_NAME'] if 'DB_NAME' in os.environ else database
+            connection = mysql.connector.connect(user=user, password=password, database=database, host=host)
             return connection
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:

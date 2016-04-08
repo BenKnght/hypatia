@@ -1,0 +1,14 @@
+{
+  "name": "astronomy_viz",
+  "version": "1.0.0",
+  "description": "Astronomy Visualizations",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "bower install; mkdir -p /tmp/datafiles /tmp/logfiles"
+  },
+  "author": "Nitin Pasumarthy",
+  "license": "MIT",
+  "dependencies": {
+    "bower": "^1.7.9"
+  }
+}

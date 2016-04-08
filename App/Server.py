@@ -15,8 +15,8 @@ from Config import logger
 
 app = Flask(__name__)
 
-LOG_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), './logs')
-UPLOADS_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), './datafiles')
+LOG_DIR = os.environ['LOGFILES_PATH']
+UPLOADS_DIR = os.environ['DATAFILES_PATH']
 
 
 @app.route('/', methods=['GET'])

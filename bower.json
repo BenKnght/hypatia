@@ -1,0 +1,32 @@
+{
+  "name": "astronomy_viz",
+  "description": "Astronomy Visualizations",
+  "main": "index.js",
+  "authors": [
+    "Nitin Pasumarthy"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "astronomy",
+    "visualization",
+    "canjs",
+    "angularjs",
+    "reactjs"
+  ],
+  "homepage": "https://github.com/Nithanaroy/astronomy_visualizations",
+  "moduleType": [
+    "es6"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^2.2.3",
+    "blueimp-file-upload": "^9.12.1",
+    "bootstrap": "^3.3.6"
+  }
+}

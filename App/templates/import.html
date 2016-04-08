@@ -1,8 +1,8 @@
 {% extends "index.html" %}
 {% block title %}Import Data{% endblock %}
 {% block head %}
-    {{ super() }}
-    <link rel="stylesheet" type="text/css" href="/static/node_modules/blueimp-file-upload/css/jquery.fileupload.css">
+{{ super() }}
+<link rel="stylesheet" type="text/css" href="/static/bower_components/blueimp-file-upload/css/jquery.fileupload.css">
 {% endblock %}
 {% block content %}
 <h2>Import data</h2>
@@ -39,16 +39,16 @@
     TiH 0.19 [Adamow et al. (2014)]
 </pre>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.6.15/browser.js"></script>
-<script type="text/javascript" src="/static/node_modules/jquery/dist/jquery.min.js"></script>
-<!--<script type="text/javascript" src="/static/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>-->
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.6.15/browser.js"></script>-->
+<script type="text/javascript" src="/static/bower_components/jquery/dist/jquery.min.js"></script>
+<!--<script type="text/javascript" src="/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>-->
 <!-- file upload-->
-<script src="/static/node_modules/blueimp-file-upload/js/vendor/jquery.ui.widget.js"></script>
-<script src="/static/node_modules/blueimp-file-upload/js/jquery.iframe-transport.js"></script>
-<script src="/static/node_modules/blueimp-file-upload/js/jquery.fileupload.js"></script>
+<script src="/static/bower_components/blueimp-file-upload/js/vendor/jquery.ui.widget.js"></script>
+<script src="/static/bower_components/blueimp-file-upload/js/jquery.iframe-transport.js"></script>
+<script src="/static/bower_components/blueimp-file-upload/js/jquery.fileupload.js"></script>
 
 
-<script type="text/babel">
+<script type="text/javascript">
     $('#fileupload').fileupload({
         dataType: 'json',
         autoUpload: false,
