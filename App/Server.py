@@ -10,6 +10,7 @@ from flask import render_template
 from flask import send_from_directory
 
 import Importer
+from DataSource.MySQLDataSource import MySQL
 import Config
 from Config import logger
 
@@ -37,19 +38,24 @@ def send_logfile(filename):
 @app.route('/upload', methods=['POST'])
 def upload():
     datafile = request.files['file']
+    database = os.environ['DB_NAME'] if 'DB_NAME' in os.environ else 'astronomy_test'
+    c = MySQL.get_connection(database)
     if datafile:
-        logfile = os.path.splitext(datafile.filename)[0] + str(
-            int(time.time())) + '.log'  # given name + current timestamp
-        f = logging.FileHandler(os.path.join(LOG_DIR, logfile), 'w')
-        Config.setup_logging(f)
+        try:
+            logfile = os.path.splitext(datafile.filename)[0] + str(
+                int(time.time())) + '.log'  # given name + current timestamp
+            f = logging.FileHandler(os.path.join(LOG_DIR, logfile), 'w')
+            Config.setup_logging(f)
 
-        filepath = os.path.join(UPLOADS_DIR, datafile.filename)
-        datafile.save(filepath)  # to file system
-        Importer.run(filepath)
+            filepath = os.path.join(UPLOADS_DIR, datafile.filename)
+            datafile.save(filepath)  # to file system
+            Importer.run(filepath, c)
 
-        logger.removeHandler(f)
-        f.close()
-        return jsonify({"name": datafile.filename, 'log': logfile})
+            logger.removeHandler(f)
+            f.close()
+            return jsonify({"name": datafile.filename, 'log': logfile})
+        finally:
+            c.close()
 
 
 def main():

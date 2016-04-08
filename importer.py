@@ -4,14 +4,13 @@ from Parser.HypatiaParser import HypatiaParser
 import Config
 
 
-def run(input_file, database='astronomy_test'):
+def run(input_file, c):
     """
     Parse the file and import entities into the database
     :param input_file: input file path as a string
-    :param database: name of the database to import into as string
+    :param c: open connection to database
     :return:None
     """
-    c = MySQL.get_connection(database)
     p = HypatiaParser(input_file)
     if c:
         for star, elements in p.next():
@@ -33,10 +32,13 @@ def run(input_file, database='astronomy_test'):
                     composition.upsert(c)
             except:
                 logger.exception('Saving star failed: "%s"')
-        c.close()
 
 
 if __name__ == '__main__':
     Config.setup_logging()
-    run('./Assets/test_inp.txt')
-    # run('./Assets/hypatia_norm_16_01_10.txt')
+    c = MySQL.get_connection('astronomy_test')
+    try:
+        run('./Assets/test_inp.txt', c)
+        # run('./Assets/hypatia_norm_16_01_10.txt')
+    finally:
+        c.close()

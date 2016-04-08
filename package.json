@@ -4,7 +4,7 @@
   "description": "Astronomy Visualizations",
   "main": "index.js",
   "scripts": {
-    "postinstall": "bower install; mkdir -p /tmp/datafiles /tmp/logfiles"
+    "postinstall": "bower install && mkdir -p /tmp/datafiles /tmp/logfiles"
   },
   "author": "Nitin Pasumarthy",
   "license": "MIT",

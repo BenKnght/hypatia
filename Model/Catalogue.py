@@ -48,5 +48,6 @@ class Catalogue(Model):
 
     def update(self, connection):
         self.columns.pop('created_at', None)  # So that original timestamp is not overwritten with current one
+        self.columns.pop('id', None)  # ID should not be updated
         update_catalogue = MySQL.update(self.TABLE, self.columns.keys(), ['author_year'], ['='])
         return super(Catalogue, self).update(update_catalogue, connection)
