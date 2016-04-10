@@ -1,7 +1,11 @@
 {% raw %}
-<div class="btn-group" role="group" aria-label="{{info.aria_label}}">
-    <button type="button" ng-repeat="value in info.elements" class="btn btn-default">
-        {{value}}
-    </button>
+
+<div class="btn-group" data-toggle="buttons" aria-label="{{info.aria_label}}">
+    <label class="btn btn-default" ng-repeat="btn in info.buttons" ng-class="{active: btn.pressed}">
+        <input type="{{onlyone ? 'radio' : 'checkbox'}}" ng-checked="btn.pressed" name="{{btn.name}}"
+               value="{{btn.value}}">
+        {{btn.display}}
+    </label>
 </div>
+
 {% endraw %}

@@ -26,17 +26,16 @@
         </div>
 
         <div ng-hide="visibility.showStarGo">
-            <h3>Select catalogues</h3>
-            <div class="btn-group" role="group" aria-label="which catalogues">
-                <button type="button" class="btn btn-default">Catalogue 1</button>
-                <button type="button" class="btn btn-default">Catalogue 2</button>
-                <button type="button" class="btn btn-default">Catalogue 3</button>
-            </div>
+            <h3>Select catalogues
+                <!-- TODO: Badge value doesn't update when number of buttons pressed change -->
+                <!-- <span class="badge">{{(catalogs.buttons | filter: {pressed: true}).length}}</span> -->
+            </h3>
+            <button-group data-info="catalogs"></button-group>
         </div>
 
         <div ng-hide="visibility.showStarGo">
             <h3>Pick an element for X-axis</h3>
-            <button-group data-info="xaxis"></button-group>
+            <button-group data-info="xaxis" data-onlyone="true"></button-group>
         </div>
 
         <div ng-hide="visibility.showStarGo">
@@ -56,29 +55,43 @@
 </div>
 {% endraw %}
 <script type="text/javascript" src="/static/bower_components/angular/angular.min.js"></script>
+<script type="text/javascript" src="/static/bower_components/jquery/dist/jquery.min.js"></script>
+<script type="text/javascript" src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 <script type="text/javascript">
     (function () {
-        var app = angular.module('viz', []);
+        const app = angular.module('viz', []);
 
-        var defaultVisibility = {
+        const defaultVisibility = {
             showCatalogues: false,
             showXAxis: false,
             showYAxis: false,
             showChart: false,
-            showStarGo: true
+            showStarGo: false
         };
 
         app.controller('VisualizationController', function ($scope, StarService) {
             $scope.visibility = defaultVisibility;
-            $scope.yaxis = {aria_label: 'elements for y axis', elements: [1, 2, 3]};
-            $scope.xaxis = {aria_label: 'elements for x axis', elements: [01, 02, 03]};
-            $scope.getElements = function () {
+            $scope.catalogs = {
+                aria_label: 'which catalogues to use?',
+                buttons: [{value: 1, display: 'Catalogue 1', pressed: true},
+                    {value: 2, display: 'Catalogue 2', pressed: true},
+                    {value: 3, display: 'Catalogue 3', pressed: true}]
+            };
+            $scope.yaxis = {
+                aria_label: 'elements for y axis',
+                buttons: [{value: 1, display: 1}, {value: 2, display: 2}]
+            };
+            $scope.xaxis = {
+                aria_label: 'elements for x axis',
+                buttons: [{value: 1, name: 'xaxis', display: 1}, {value: 2, name: 'xaxis', display: 2}]
+            };
+            $scope.getElements = function (e) {
                 if ($scope.hip.trim().length == 0)
                     return;
 
                 StarService.getElements($scope.hip).then(function (elements) {
-                    $scope.xaxis.elements = elements.data;
-                    $scope.yaxis.elements = [10, 20, 30]
+                    $scope.xaxis.buttons = [{value: 10, display: 10}, {value: 20, display: 20}]
+                    $scope.yaxis.buttons = [{value: 10, display: 10}, {value: 20, display: 20}]
 
                     $scope.visibility.showStarGo = false;
                     $scope.visibility.showXAxis = true;
@@ -95,7 +108,8 @@
             return {
                 restrict: 'E',
                 scope: {
-                    info: '='
+                    info: '=',
+                    onlyone: '='
                 },
                 templateUrl: '/partials/_button-group.html'
             }

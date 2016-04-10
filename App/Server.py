@@ -68,7 +68,7 @@ def upload():
 
 @app.route('/star/<hip>/elements', methods=['GET'])
 def elements_of_star(hip):
-    return jsonify({'data': ['FeH', 'NiH', 'BeH']})
+    return jsonify({'data': {1: 'FeH', 2: 'NiH', 3: 'BeH'}})
 
 
 def main():
