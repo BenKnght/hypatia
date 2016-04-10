@@ -20,21 +20,29 @@ LOG_DIR = os.environ['LOGFILES_PATH']
 UPLOADS_DIR = os.environ['DATAFILES_PATH']
 
 
-@app.route('/', methods=['GET'])
+# HTML Services
+@app.route('/')
 def index():
-    return render_template('import.html')
+    # return render_template('import.html')
+    return visualize()
 
 
-@app.route('/visualize', methods=['GET'])
+@app.route('/visualize')
 def visualize():
     return render_template('visualization.html')
 
 
-@app.route('/log/<filename>', methods=['GET'])
+@app.route('/log/<filename>')
 def send_logfile(filename):
     return send_from_directory(LOG_DIR, filename)
 
 
+@app.route('/partials/<filename>', methods=['GET'])
+def send_partial(filename):
+    return render_template('partials/%s' % (filename,))
+
+
+# Services
 @app.route('/upload', methods=['POST'])
 def upload():
     datafile = request.files['file']
@@ -56,6 +64,11 @@ def upload():
             return jsonify({"name": datafile.filename, 'log': logfile})
         finally:
             c.close()
+
+
+@app.route('/star/<hip>/elements', methods=['GET'])
+def elements_of_star(hip):
+    return jsonify({'data': ['FeH', 'NiH', 'BeH']})
 
 
 def main():

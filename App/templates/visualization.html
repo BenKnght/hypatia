@@ -6,45 +6,115 @@
 {% endblock %}
 
 {% block content %}
-<form>
-    <h3>HIP of the star you want to visualize?</h3>
-    <div class="form-group">
-        <label class="sr-only" for="star_id">Star</label>
-        <div class="input-group">
-            <div class="input-group-addon">
-                <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+{% raw %}
+<div ng-app="viz">
+    <form ng-controller="VisualizationController as v">
+        <div class="form-inline">
+            <h3>HIP of the star you want to visualize?</h3>
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon">
+                        <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+                    </div>
+                    <input type="text" class="form-control" ng-model="hip" ng-change="visibility.showStarGo = true"
+                           placeholder="HIP of the star" autofocus>
+                </div>
+                <button type="button" class="btn btn-primary" aria-label="submit hip" ng-show="visibility.showStarGo"
+                        ng-click="getElements()">Go
+                </button>
             </div>
-            <input type="text" class="form-control" id="star_id" placeholder="HIP of the star" autofocus>
         </div>
-    </div>
 
-    <h3>Select catalogues</h3>
-    <div class="btn-group" role="group" aria-label="which catalogues">
-        <button type="button" class="btn btn-default">Catalogue 1</button>
-        <button type="button" class="btn btn-default">Catalogue 2</button>
-        <button type="button" class="btn btn-default">Catalogue 3</button>
-    </div>
-
-    <h3>Pick an element for X-axis</h3>
-    <div class="btn-group" role="group" aria-label="element for x axis">
-        <button type="button" class="btn btn-default">FeH</button>
-        <button type="button" class="btn btn-default">NiH</button>
-        <button type="button" class="btn btn-default">BeH</button>
-    </div>
-
-    <h3>For Y-axis?</h3>
-    <div class="btn-group" role="group" aria-label="element for y axis">
-        <button type="button" class="btn btn-default">FeH</button>
-        <button type="button" class="btn btn-default">NiH</button>
-        <button type="button" class="btn btn-default">BeH</button>
-    </div>
-
-    <h3>And here you go...</h3>
-    <div class="panel panel-default">
-        <div class="panel-body">
-            Your chart will appear here...
+        <div ng-hide="visibility.showStarGo">
+            <h3>Select catalogues</h3>
+            <div class="btn-group" role="group" aria-label="which catalogues">
+                <button type="button" class="btn btn-default">Catalogue 1</button>
+                <button type="button" class="btn btn-default">Catalogue 2</button>
+                <button type="button" class="btn btn-default">Catalogue 3</button>
+            </div>
         </div>
-    </div>
-</form>
 
+        <div ng-hide="visibility.showStarGo">
+            <h3>Pick an element for X-axis</h3>
+            <button-group data-info="xaxis"></button-group>
+        </div>
+
+        <div ng-hide="visibility.showStarGo">
+            <h3>For Y-axis?</h3>
+            <button-group data-info="yaxis"></button-group>
+        </div>
+
+        <div ng-hide="visibility.showStarGo">
+            <h3>And here you go...</h3>
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    Your chart will appear here...
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endraw %}
+<script type="text/javascript" src="/static/bower_components/angular/angular.min.js"></script>
+<script type="text/javascript">
+    (function () {
+        var app = angular.module('viz', []);
+
+        var defaultVisibility = {
+            showCatalogues: false,
+            showXAxis: false,
+            showYAxis: false,
+            showChart: false,
+            showStarGo: true
+        };
+
+        app.controller('VisualizationController', function ($scope, StarService) {
+            $scope.visibility = defaultVisibility;
+            $scope.yaxis = {aria_label: 'elements for y axis', elements: [1, 2, 3]};
+            $scope.xaxis = {aria_label: 'elements for x axis', elements: [01, 02, 03]};
+            $scope.getElements = function () {
+                if ($scope.hip.trim().length == 0)
+                    return;
+
+                StarService.getElements($scope.hip).then(function (elements) {
+                    $scope.xaxis.elements = elements.data;
+                    $scope.yaxis.elements = [10, 20, 30]
+
+                    $scope.visibility.showStarGo = false;
+                    $scope.visibility.showXAxis = true;
+                    $scope.visibility.showYAxis = true;
+                }, function (errors) {
+                    console.log(errors);
+                });
+            };
+
+            // Interaction Functions
+        });
+
+        app.directive('buttonGroup', function () {
+            return {
+                restrict: 'E',
+                scope: {
+                    info: '='
+                },
+                templateUrl: '/partials/_button-group.html'
+            }
+        });
+
+        app.factory('StarService', function ($http, $q) {
+            return {
+                getElements: function (hip) {
+                    var deferred = $q.defer();
+                    var url = '/star/' + hip + '/elements';
+                    $http.get(url).success(function (data) {
+                        deferred.resolve(data);
+                    }).error(function (data) {
+                        deferred.reject(data);
+                    });
+                    return deferred.promise;
+                }
+            }
+        });
+    })();
+</script>
 {% endblock %}
