@@ -77,6 +77,17 @@ class MySQL(DataSource):
         return conditions_and_types
 
     @staticmethod
+    def execute(database, query, params):
+        try:
+            con = MySQL.get_connection(database)
+            c = con.cursor()
+            c.execute(query, params)
+            return c.fetchall()
+        finally:
+            if c: c.close()
+            con.close()
+
+    @staticmethod
     def get_connection(database='astronomy'):
         """
         Returns an open Database connection

@@ -26,30 +26,36 @@
         </div>
 
         <div ng-hide="visibility.showStarGo">
-            <h3>Select catalogues
-                <!-- TODO: Badge value doesn't update when number of buttons pressed change -->
-                <!-- <span class="badge">{{(catalogs.buttons | filter: {pressed: true}).length}}</span> -->
+            <h3>Select catalogs
+                 <span class="badge">{{(catalogs.buttons | filter: {pressed: true}).length}}</span>
             </h3>
-            <button-group data-info="catalogs"></button-group>
+            <button-group data-info="catalogs" data-selection-change="updateChart()"></button-group>
         </div>
 
         <div ng-hide="visibility.showStarGo">
-            <h3>Pick an element for X-axis</h3>
-            <button-group data-info="xaxis" data-onlyone="true"></button-group>
+            <h3>Pick elements for X-axis</h3>
+            <button-group data-info="xaxis" data-selection-change="updateChart()"></button-group>
         </div>
 
         <div ng-hide="visibility.showStarGo">
             <h3>For Y-axis?</h3>
-            <button-group data-info="yaxis"></button-group>
+            <button-group data-info="yaxes" data-selection-change="updateChart()"></button-group>
         </div>
 
         <div ng-hide="visibility.showStarGo">
             <h3>And here you go...</h3>
             <div class="panel panel-default">
                 <div class="panel-body">
-                    Your chart will appear here...
+                    {{chartData | json}}
                 </div>
             </div>
+        </div>
+
+        <div ng-show="true">
+            <h4>X-Axis</h4>
+            <div>{{xaxis.buttons | json}}</div>
+            <h4>Y-Axis</h4>
+            <div>{{yaxes.buttons | json}}</div>
         </div>
     </form>
 </div>
@@ -62,11 +68,8 @@
         const app = angular.module('viz', []);
 
         const defaultVisibility = {
-            showCatalogues: false,
-            showXAxis: false,
-            showYAxis: false,
-            showChart: false,
-            showStarGo: false
+            showChart: true,
+            showStarGo: true
         };
 
         app.controller('VisualizationController', function ($scope, StarService) {
@@ -77,25 +80,38 @@
                     {value: 2, display: 'Catalogue 2', pressed: true},
                     {value: 3, display: 'Catalogue 3', pressed: true}]
             };
-            $scope.yaxis = {
+            $scope.yaxes = {
                 aria_label: 'elements for y axis',
-                buttons: [{value: 1, display: 1}, {value: 2, display: 2}]
+                buttons: []
             };
             $scope.xaxis = {
                 aria_label: 'elements for x axis',
-                buttons: [{value: 1, name: 'xaxis', display: 1}, {value: 2, name: 'xaxis', display: 2}]
+                buttons: []
             };
+
+            $scope.updateChart = function () {
+                let cids = $scope.catalogs.buttons.filter(b => b.pressed).map(c => c.value);
+                let xelems = $scope.xaxis.buttons.filter(b => b.pressed).map(c => c.value);
+                let yelems = $scope.yaxes.buttons.filter(b => b.pressed).map(c => c.value);
+
+                if(xelems.length == 0 || yelems.length == 0) return;
+
+                let elems = new Set(xelems.concat(yelems))
+                StarService.getCompositions($scope.hip, [...elems]).then(function (compositions) {
+                    $scope.chartData = compositions;
+                }, function (error) {
+                    console.log(error);
+                });
+            };
+
             $scope.getElements = function (e) {
                 if ($scope.hip.trim().length == 0)
                     return;
 
-                StarService.getElements($scope.hip).then(function (elements) {
-                    $scope.xaxis.buttons = [{value: 10, display: 10}, {value: 20, display: 20}]
-                    $scope.yaxis.buttons = [{value: 10, display: 10}, {value: 20, display: 20}]
-
+                StarService.getElements($scope.hip).then(function (data) {
+                    $scope.xaxis.buttons = data.elements.map(e => ({value: e, display: e}))
+                    $scope.yaxes.buttons = data.elements.map(e => ({value: e, display: e}))
                     $scope.visibility.showStarGo = false;
-                    $scope.visibility.showXAxis = true;
-                    $scope.visibility.showYAxis = true;
                 }, function (errors) {
                     console.log(errors);
                 });
@@ -109,7 +125,9 @@
                 restrict: 'E',
                 scope: {
                     info: '=',
-                    onlyone: '='
+                    onlyone: '=',
+                    selectionChange: '&',
+                    name: '@'
                 },
                 templateUrl: '/partials/_button-group.html'
             }
@@ -121,6 +139,19 @@
                     var deferred = $q.defer();
                     var url = '/star/' + hip + '/elements';
                     $http.get(url).success(function (data) {
+                        deferred.resolve(data);
+                    }).error(function (data) {
+                        deferred.reject(data);
+                    });
+                    return deferred.promise;
+                },
+                getCompositions: function (hip, elements) {
+                    var deferred = $q.defer();
+                    var url = `/star/${hip}/compositions`;
+                    let config = {
+                        params: {'elements': elements}
+                    }
+                    $http.get(url, config).success(function (data) {
                         deferred.resolve(data);
                     }).error(function (data) {
                         deferred.reject(data);

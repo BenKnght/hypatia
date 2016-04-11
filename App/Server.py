@@ -37,7 +37,7 @@ def send_logfile(filename):
     return send_from_directory(LOG_DIR, filename)
 
 
-@app.route('/partials/<filename>', methods=['GET'])
+@app.route('/partials/<filename>')
 def send_partial(filename):
     return render_template('partials/%s' % (filename,))
 
@@ -66,9 +66,25 @@ def upload():
             c.close()
 
 
-@app.route('/star/<hip>/elements', methods=['GET'])
+@app.route('/star/<hip>/elements')
 def elements_of_star(hip):
-    return jsonify({'data': {1: 'FeH', 2: 'NiH', 3: 'BeH'}})
+    query = """SELECT DISTINCT element FROM composition
+                WHERE hip = %s"""
+    res = map(lambda e: e[0], MySQL.execute('astronomy_test', query, [hip]))
+    return jsonify({'elements': res})
+
+
+@app.route('/star/<hip>/compositions')
+def compositions_of_star(hip):
+    elements = request.args.getlist('elements')
+    in_clause = ','.join(['%s'] * len(elements))
+    query = """SELECT element, AVG(value)
+                FROM composition WHERE hip = %s AND element IN ({})
+                GROUP BY element;""".format(in_clause)
+    res = {}
+    for k, v in MySQL.execute('astronomy_test', query, [hip] + elements):
+        res[k] = v
+    return jsonify(res)
 
 
 def main():

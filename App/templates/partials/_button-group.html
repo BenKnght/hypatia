@@ -1,9 +1,16 @@
 {% raw %}
 
-<div class="btn-group" data-toggle="buttons" aria-label="{{info.aria_label}}">
-    <label class="btn btn-default" ng-repeat="btn in info.buttons" ng-class="{active: btn.pressed}">
-        <input type="{{onlyone ? 'radio' : 'checkbox'}}" ng-checked="btn.pressed" name="{{btn.name}}"
-               value="{{btn.value}}">
+<!--<div class="btn-group" data-toggle="buttons" aria-label="{{info.aria_label}}">-->
+<!--<label class="btn btn-default" ng-repeat="btn in info.buttons" ng-class="{active: btn.pressed}" ng-click="upvote()" ng-model="btn.pressed">-->
+<!--<input type="{{onlyone ? 'radio' : 'checkbox'}}" value="{{btn.value}}">-->
+<!--{{btn.display}}-->
+<!--</label>-->
+<!--</div>-->
+
+<div class="form-group" aria-label="{{info.aria_label}}">
+    <label ng-repeat="btn in info.buttons" class="{{onlyone ? 'radio-inline' : 'checkbox-inline'}}">
+        <input type="{{onlyone ? 'radio' : 'checkbox'}}" name="{{name}}" class="{{onlyone ? 'radio' : 'checkbox'}}"
+               value="{{btn.value}}" ng-model="btn.pressed" ng-click="selectionChange()">
         {{btn.display}}
     </label>
 </div>
