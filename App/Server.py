@@ -20,21 +20,29 @@ LOG_DIR = os.environ['LOGFILES_PATH']
 UPLOADS_DIR = os.environ['DATAFILES_PATH']
 
 
-@app.route('/', methods=['GET'])
+# HTML Services
+@app.route('/')
 def index():
-    return render_template('import.html')
+    # return render_template('import.html')
+    return visualize()
 
 
-@app.route('/visualize', methods=['GET'])
+@app.route('/visualize')
 def visualize():
     return render_template('visualization.html')
 
 
-@app.route('/log/<filename>', methods=['GET'])
+@app.route('/log/<filename>')
 def send_logfile(filename):
     return send_from_directory(LOG_DIR, filename)
 
 
+@app.route('/partials/<filename>')
+def send_partial(filename):
+    return render_template('partials/%s' % (filename,))
+
+
+# Services
 @app.route('/upload', methods=['POST'])
 def upload():
     datafile = request.files['file']
@@ -56,6 +64,27 @@ def upload():
             return jsonify({"name": datafile.filename, 'log': logfile})
         finally:
             c.close()
+
+
+@app.route('/star/<hip>/elements')
+def elements_of_star(hip):
+    query = """SELECT DISTINCT element FROM composition
+                WHERE hip = %s"""
+    res = map(lambda e: e[0], MySQL.execute('astronomy_test', query, [hip]))
+    return jsonify({'elements': res})
+
+
+@app.route('/star/<hip>/compositions')
+def compositions_of_star(hip):
+    elements = request.args.getlist('elements')
+    in_clause = ','.join(['%s'] * len(elements))
+    query = """SELECT element, AVG(value)
+                FROM composition WHERE hip = %s AND element IN ({})
+                GROUP BY element;""".format(in_clause)
+    res = {}
+    for k, v in MySQL.execute('astronomy_test', query, [hip] + elements):
+        res[k] = v
+    return jsonify(res)
 
 
 def main():

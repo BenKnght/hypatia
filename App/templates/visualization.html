@@ -3,48 +3,225 @@
 
 {% block head %}
 {{ super() }}
+<link href="/static/bower_components/amcharts/dist/amcharts/plugins/export/export.css"
+      media="all" rel="stylesheet" type="text/css" />
 {% endblock %}
 
 {% block content %}
-<form>
-    <h3>HIP of the star you want to visualize?</h3>
-    <div class="form-group">
-        <label class="sr-only" for="star_id">Star</label>
-        <div class="input-group">
-            <div class="input-group-addon">
-                <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+{% raw %}
+<div ng-app="viz">
+    <form ng-controller="VisualizationController as v">
+        <div class="form-inline">
+            <h3>HIP of the star you want to visualize?</h3>
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon">
+                        <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+                    </div>
+                    <input type="text" class="form-control" ng-model="hip" ng-change="starChanged()"
+                           placeholder="HIP of the star" autofocus>
+                </div>
+                <button type="button" class="btn btn-primary" aria-label="submit hip" ng-show="visibility.showStarGo"
+                        ng-click="getElements()">Go
+                </button>
             </div>
-            <input type="text" class="form-control" id="star_id" placeholder="HIP of the star" autofocus>
         </div>
-    </div>
 
-    <h3>Select catalogues</h3>
-    <div class="btn-group" role="group" aria-label="which catalogues">
-        <button type="button" class="btn btn-default">Catalogue 1</button>
-        <button type="button" class="btn btn-default">Catalogue 2</button>
-        <button type="button" class="btn btn-default">Catalogue 3</button>
-    </div>
-
-    <h3>Pick an element for X-axis</h3>
-    <div class="btn-group" role="group" aria-label="element for x axis">
-        <button type="button" class="btn btn-default">FeH</button>
-        <button type="button" class="btn btn-default">NiH</button>
-        <button type="button" class="btn btn-default">BeH</button>
-    </div>
-
-    <h3>For Y-axis?</h3>
-    <div class="btn-group" role="group" aria-label="element for y axis">
-        <button type="button" class="btn btn-default">FeH</button>
-        <button type="button" class="btn btn-default">NiH</button>
-        <button type="button" class="btn btn-default">BeH</button>
-    </div>
-
-    <h3>And here you go...</h3>
-    <div class="panel panel-default">
-        <div class="panel-body">
-            Your chart will appear here...
+        <div ng-hide="visibility.showStarGo">
+            <h3>Select catalogs
+                 <span class="badge">{{(catalogs.buttons | filter: {pressed: true}).length}}</span>
+            </h3>
+            <button-group data-info="catalogs" data-selection-change="updateChart()"></button-group>
         </div>
-    </div>
-</form>
 
+        <div ng-hide="visibility.showStarGo">
+            <h3>Pick elements for X-axis</h3>
+            <button-group data-info="xaxis" data-selection-change="updateChart()"></button-group>
+        </div>
+
+        <div ng-hide="visibility.showStarGo">
+            <h3>For Y-axis?</h3>
+            <button-group data-info="yaxes" data-selection-change="updateChart()"></button-group>
+        </div>
+
+        <p ng-show="debug">{{chartData | json}}</p>
+        <div ng-show="visibility.showChart && !visibility.showStarGo">
+            <h3>And here you go...</h3>
+            <div class="panel panel-default">
+                <div class="panel-body" id="chart" style="width: 100%; height: 500px;"></div>
+            </div>
+        </div>
+
+        <div ng-show="debug">
+            <h4>X-Axis</h4>
+            <div>{{xaxis.buttons | json}}</div>
+            <h4>Y-Axis</h4>
+            <div>{{yaxes.buttons | json}}</div>
+        </div>
+    </form>
+</div>
+{% endraw %}
+<script type="text/javascript" src="/static/bower_components/angular/angular.min.js"></script>
+<script type="text/javascript" src="/static/bower_components/jquery/dist/jquery.min.js"></script>
+<script type="text/javascript" src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="/static/bower_components/amcharts/dist/amcharts/amcharts.js"></script>
+<script type="text/javascript" src="/static/bower_components/amcharts/dist/amcharts/xy.js"></script>
+<script type="text/javascript" src="/static/bower_components/amcharts/dist/amcharts/plugins/export/export.min.js"></script>
+
+<script type="text/javascript">
+    (function (angular, AmCharts) {
+        const app = angular.module('viz', []);
+
+        const defaultVisibility = {
+            showChart: false,
+            showStarGo: true
+        };
+
+        app.controller('VisualizationController', function ($scope, StarService) {
+            $scope.visibility = defaultVisibility;
+            $scope.catalogs = {
+                aria_label: 'which catalogues to use?',
+                buttons: [{value: 1, display: 'Catalogue 1', pressed: true},
+                    {value: 2, display: 'Catalogue 2', pressed: true},
+                    {value: 3, display: 'Catalogue 3', pressed: true}]
+            };
+            $scope.yaxes = {
+                aria_label: 'elements for y axis',
+                buttons: []
+            };
+            $scope.xaxis = {
+                aria_label: 'elements for x axis',
+                buttons: []
+            };
+
+            $scope.debug = false;
+
+            $scope.starChanged = function() {
+                $scope.visibility.showStarGo = true;
+                $scope.visibility.showChart = false;
+            }
+
+            $scope.updateChart = function () {
+                let cids = $scope.getValuesOfButtonsPressed($scope.catalogs.buttons);
+                let xelems = $scope.getValuesOfButtonsPressed($scope.xaxis.buttons);
+                let yelems = $scope.getValuesOfButtonsPressed($scope.yaxes.buttons);
+
+                if(xelems.length == 0 || yelems.length == 0) return;
+
+                let elems = new Set(xelems.concat(yelems))
+                StarService.getCompositions($scope.hip, [...elems]).then(function(compositions) {
+                    $scope.chartData = compositions;
+                    let xelems = $scope.getValuesOfButtonsPressed($scope.xaxis.buttons);
+                    let yelems = $scope.getValuesOfButtonsPressed($scope.yaxes.buttons);
+                    let data = [];
+                    for(let x of xelems) {
+                        for(let y of yelems) {
+                            data.push({
+                               'x': compositions[x],
+                                'y': compositions[y],
+                                'value': `${y}<br/ >${x}: ${compositions[x]}<br />${y}: ${compositions[y]}`
+                            });
+                        }
+                    }
+                    $scope.chart.dataProvider = data;
+                    $scope.chart.validateData();
+
+                    $scope.visibility.showChart = true;
+                }, function (error) {
+                    console.log(error);
+                });
+            };
+
+            $scope.getElements = function (e) {
+                if ($scope.hip.trim().length == 0)
+                    return;
+
+                StarService.getElements($scope.hip).then(function (data) {
+                    $scope.xaxis.buttons = data.elements.map(e => ({value: e, display: e}))
+                    $scope.yaxes.buttons = data.elements.map(e => ({value: e, display: e}))
+                    $scope.visibility.showStarGo = false;
+                }, function (errors) {
+                    console.log(errors);
+                });
+            };
+
+            // Helper functions
+            /**
+             * From the collection of buttons, returns values of those buttons
+             * which have a property, 'pressed' set to true
+             * @param buttons list of buttons
+             * @returns {Array} list of values
+             */
+            $scope.getValuesOfButtonsPressed = function(buttons) {
+                return buttons.filter(b => b.pressed).map(c => c.value);
+            }
+
+            // Charting
+            $scope.chart = AmCharts.makeChart("chart",{
+                "type": "xy",
+                "autoMargins": true,
+                "autoMarginOffset": 20,
+                "handDrawn": true,
+                "addClassNames": false,
+                "graphs": [
+                    {
+                        "bullet": "diamond",
+                        "bulletSize": 30,
+                        "lineAlpha": 0,
+                        "valueField": "value",
+                        "xField": "x",
+                        "yField": "y"
+                    }
+                ],
+                "dataProvider": [],
+                "export": {
+                    "enabled": true
+                }
+            });
+        });
+
+        app.directive('buttonGroup', function () {
+            return {
+                restrict: 'E',
+                scope: {
+                    info: '=',
+                    onlyone: '=',
+                    selectionChange: '&',
+                    name: '@'
+                },
+                templateUrl: '/partials/_button-group.html'
+            }
+        });
+
+        app.factory('StarService', function ($http, $q) {
+            return {
+                getElements: function (hip) {
+                    var deferred = $q.defer();
+                    var url = '/star/' + hip + '/elements';
+                    $http.get(url).success(function (data) {
+                        deferred.resolve(data);
+                    }).error(function (data) {
+                        deferred.reject(data);
+                    });
+                    return deferred.promise;
+                },
+                getCompositions: function (hip, elements) {
+                    var deferred = $q.defer();
+                    var url = `/star/${hip}/compositions`;
+                    let config = {
+                        params: {'elements': elements}
+                    }
+                    $http.get(url, config).success(function (data) {
+                        deferred.resolve(data);
+                    }).error(function (data) {
+                        deferred.reject(data);
+                    });
+                    return deferred.promise;
+                }
+            }
+        });
+
+
+    })(window.angular, window.AmCharts);
+</script>
 {% endblock %}

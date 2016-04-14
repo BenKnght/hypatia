@@ -27,6 +27,8 @@
   "dependencies": {
     "jquery": "^2.2.3",
     "blueimp-file-upload": "^9.12.1",
-    "bootstrap": "^3.3.6"
+    "bootstrap": "^3.3.6",
+    "angular": "^1.5.3",
+    "amcharts": "^3.15.2"
   }
 }
