@@ -18,6 +18,7 @@ app = Flask(__name__)
 
 LOG_DIR = os.environ['LOGFILES_PATH']
 UPLOADS_DIR = os.environ['DATAFILES_PATH']
+DATABASE = os.environ['DB_NAME'] if 'DB_NAME' in os.environ else 'astronomy_test'
 
 
 # HTML Services
@@ -25,6 +26,11 @@ UPLOADS_DIR = os.environ['DATAFILES_PATH']
 def index():
     # return render_template('import.html')
     return visualize()
+
+
+@app.route('/import')
+def import_data():
+    return render_template('import.html')
 
 
 @app.route('/visualize')
@@ -46,8 +52,7 @@ def send_partial(filename):
 @app.route('/upload', methods=['POST'])
 def upload():
     datafile = request.files['file']
-    database = os.environ['DB_NAME'] if 'DB_NAME' in os.environ else 'astronomy_test'
-    c = MySQL.get_connection(database)
+    c = MySQL.get_connection(DATABASE)
     if datafile:
         try:
             logfile = os.path.splitext(datafile.filename)[0] + str(
@@ -70,7 +75,7 @@ def upload():
 def elements_of_star(hip):
     query = """SELECT DISTINCT element FROM composition
                 WHERE hip = %s"""
-    res = map(lambda e: e[0], MySQL.execute('astronomy_test', query, [hip]))
+    res = map(lambda e: e[0], MySQL.execute(DATABASE, query, [hip]))
     return jsonify({'elements': res})
 
 
@@ -82,7 +87,7 @@ def compositions_of_star(hip):
                 FROM composition WHERE hip = %s AND element IN ({})
                 GROUP BY element;""".format(in_clause)
     res = {}
-    for k, v in MySQL.execute('astronomy_test', query, [hip] + elements):
+    for k, v in MySQL.execute(DATABASE, query, [hip] + elements):
         res[k] = v
     return jsonify(res)
 
