@@ -3,6 +3,8 @@
 
 {% block head %}
 {{ super() }}
+<link href="/static/bower_components/amcharts/dist/amcharts/plugins/export/export.css"
+      media="all" rel="stylesheet" type="text/css" />
 {% endblock %}
 
 {% block content %}
@@ -16,7 +18,7 @@
                     <div class="input-group-addon">
                         <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
                     </div>
-                    <input type="text" class="form-control" ng-model="hip" ng-change="visibility.showStarGo = true"
+                    <input type="text" class="form-control" ng-model="hip" ng-change="starChanged()"
                            placeholder="HIP of the star" autofocus>
                 </div>
                 <button type="button" class="btn btn-primary" aria-label="submit hip" ng-show="visibility.showStarGo"
@@ -42,16 +44,15 @@
             <button-group data-info="yaxes" data-selection-change="updateChart()"></button-group>
         </div>
 
-        <div>
+        <p ng-show="debug">{{chartData | json}}</p>
+        <div ng-show="visibility.showChart && !visibility.showStarGo">
             <h3>And here you go...</h3>
             <div class="panel panel-default">
-                <div class="panel-body" id="chart" style="width: 100%; height: 500px; font-size: 11px;">
-                    {{chartData | json}}
-                </div>
+                <div class="panel-body" id="chart" style="width: 100%; height: 500px;"></div>
             </div>
         </div>
 
-        <div ng-show="true">
+        <div ng-show="debug">
             <h4>X-Axis</h4>
             <div>{{xaxis.buttons | json}}</div>
             <h4>Y-Axis</h4>
@@ -65,14 +66,14 @@
 <script type="text/javascript" src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="/static/bower_components/amcharts/dist/amcharts/amcharts.js"></script>
 <script type="text/javascript" src="/static/bower_components/amcharts/dist/amcharts/xy.js"></script>
-<script type="text/javascript" src="/static/bower_components/amcharts/dist/amcharts/themes/dark.js"></script>
+<script type="text/javascript" src="/static/bower_components/amcharts/dist/amcharts/plugins/export/export.min.js"></script>
 
 <script type="text/javascript">
     (function (angular, AmCharts) {
         const app = angular.module('viz', []);
 
         const defaultVisibility = {
-            showChart: true,
+            showChart: false,
             showStarGo: true
         };
 
@@ -93,16 +94,39 @@
                 buttons: []
             };
 
+            $scope.debug = false;
+
+            $scope.starChanged = function() {
+                $scope.visibility.showStarGo = true;
+                $scope.visibility.showChart = false;
+            }
+
             $scope.updateChart = function () {
-                let cids = $scope.catalogs.buttons.filter(b => b.pressed).map(c => c.value);
-                let xelems = $scope.xaxis.buttons.filter(b => b.pressed).map(c => c.value);
-                let yelems = $scope.yaxes.buttons.filter(b => b.pressed).map(c => c.value);
+                let cids = $scope.getValuesOfButtonsPressed($scope.catalogs.buttons);
+                let xelems = $scope.getValuesOfButtonsPressed($scope.xaxis.buttons);
+                let yelems = $scope.getValuesOfButtonsPressed($scope.yaxes.buttons);
 
                 if(xelems.length == 0 || yelems.length == 0) return;
 
                 let elems = new Set(xelems.concat(yelems))
-                StarService.getCompositions($scope.hip, [...elems]).then(function (compositions) {
+                StarService.getCompositions($scope.hip, [...elems]).then(function(compositions) {
                     $scope.chartData = compositions;
+                    let xelems = $scope.getValuesOfButtonsPressed($scope.xaxis.buttons);
+                    let yelems = $scope.getValuesOfButtonsPressed($scope.yaxes.buttons);
+                    let data = [];
+                    for(let x of xelems) {
+                        for(let y of yelems) {
+                            data.push({
+                               'x': compositions[x],
+                                'y': compositions[y],
+                                'value': `${y}<br/ >${x}: ${compositions[x]}<br />${y}: ${compositions[y]}`
+                            });
+                        }
+                    }
+                    $scope.chart.dataProvider = data;
+                    $scope.chart.validateData();
+
+                    $scope.visibility.showChart = true;
                 }, function (error) {
                     console.log(error);
                 });
@@ -120,6 +144,40 @@
                     console.log(errors);
                 });
             };
+
+            // Helper functions
+            /**
+             * From the collection of buttons, returns values of those buttons
+             * which have a property, 'pressed' set to true
+             * @param buttons list of buttons
+             * @returns {Array} list of values
+             */
+            $scope.getValuesOfButtonsPressed = function(buttons) {
+                return buttons.filter(b => b.pressed).map(c => c.value);
+            }
+
+            // Charting
+            $scope.chart = AmCharts.makeChart("chart",{
+                "type": "xy",
+                "autoMargins": true,
+                "autoMarginOffset": 20,
+                "handDrawn": true,
+                "addClassNames": false,
+                "graphs": [
+                    {
+                        "bullet": "diamond",
+                        "bulletSize": 30,
+                        "lineAlpha": 0,
+                        "valueField": "value",
+                        "xField": "x",
+                        "yField": "y"
+                    }
+                ],
+                "dataProvider": [],
+                "export": {
+                    "enabled": true
+                }
+            });
         });
 
         app.directive('buttonGroup', function () {
@@ -163,140 +221,7 @@
             }
         });
 
-        // Charting
-        var chart = AmCharts.makeChart("chart", {
-            "type": "xy",
-            "theme": "chalk",
-            "marginRight": 80,
-            "dataDateFormat": "YYYY-MM-DD",
-            "startDuration": 1.5,
-            "trendLines": [],
-            "balloon": {
-                "adjustBorderColor": false,
-                "shadowAlpha": 0,
-                "fixedPosition":true
-            },
-            "graphs": [{
-                "balloonText": "<div style='margin:5px;'><b>[[x]]</b><br>y:<b>[[y]]</b><br>value:<b>[[value]]</b></div>",
-                "bullet": "diamond",
-                "id": "AmGraph-1",
-                "lineAlpha": 0,
-                "lineColor": "#b0de09",
-                "valueField": "aValue",
-                "xField": "date",
-                "yField": "ay"
-            }, {
-                "balloonText": "<div style='margin:5px;'><b>[[x]]</b><br>y:<b>[[y]]</b><br>value:<b>[[value]]</b></div>",
-                "bullet": "round",
-                "id": "AmGraph-2",
-                "lineAlpha": 0,
-                "lineColor": "#fcd202",
-                "valueField": "bValue",
-                "xField": "date",
-                "yField": "by"
-            }],
-            "valueAxes": [{
-                "id": "ValueAxis-1",
-                "axisAlpha": 0
-            }, {
-                "id": "ValueAxis-2",
-                "axisAlpha": 0,
-                "position": "bottom",
-                "type": "date",
-                "minimumDate": new Date(2014, 11, 31),
-                "maximumDate": new Date(2015, 0, 13)
-            }],
-            "allLabels": [],
-            "titles": [],
-            "dataProvider": [{
-                "date": "2015-01-01",
-                "ay": 6.5,
-                "by": 2.2,
-                "aValue": 15,
-                "bValue": 10
-            }, {
-                "date": "2015-01-02",
-                "ay": 12.3,
-                "by": 4.9,
-                "aValue": 8,
-                "bValue": 3
-            }, {
-                "date": "2015-01-03",
-                "ay": 12.3,
-                "by": 5.1,
-                "aValue": 16,
-                "bValue": 4
-            }, {
-                "date": "2015-01-04",
-                "ay": 2.8,
-                "by": 13.3,
-                "aValue": 9,
-                "bValue": 13
-            }, {
-                "date": "2015-01-05",
-                "ay": 3.5,
-                "by": 6.1,
-                "aValue": 5,
-                "bValue": 2
-            }, {
-                "date": "2015-01-06",
-                "ay": 5.1,
-                "by": 8.3,
-                "aValue": 10,
-                "bValue": 17
-            }, {
-                "date": "2015-01-07",
-                "ay": 6.7,
-                "by": 10.5,
-                "aValue": 3,
-                "bValue": 10
-            }, {
-                "date": "2015-01-08",
-                "ay": 8,
-                "by": 12.3,
-                "aValue": 5,
-                "bValue": 13
-            }, {
-                "date": "2015-01-09",
-                "ay": 8.9,
-                "by": 4.5,
-                "aValue": 8,
-                "bValue": 11
-            }, {
-                "date": "2015-01-10",
-                "ay": 9.7,
-                "by": 15,
-                "aValue": 15,
-                "bValue": 10
-            }, {
-                "date": "2015-01-11",
-                "ay": 10.4,
-                "by": 10.8,
-                "aValue": 1,
-                "bValue": 11
-            }, {
-                "date": "2015-01-12",
-                "ay": 1.7,
-                "by": 19,
-                "aValue": 12,
-                "bValue": 3
-            }],
 
-            "export": {
-                "enabled": true
-            },
-
-            "chartScrollbar": {
-                "offset": 15,
-                "scrollbarHeight": 5
-            },
-
-            "chartCursor":{
-               "pan":true,
-               "cursorAlpha":0,
-               "valueLineAlpha":0
-            }
-        });
     })(window.angular, window.AmCharts);
 </script>
 {% endblock %}
