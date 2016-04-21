@@ -29,6 +29,7 @@
     "blueimp-file-upload": "^9.12.1",
     "bootstrap": "^3.3.6",
     "angular": "^1.5.3",
-    "amcharts": "^3.15.2"
+    "amcharts": "^3.15.2",
+    "angular-sanitize": "^1.5.5"
   }
 }

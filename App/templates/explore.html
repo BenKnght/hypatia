@@ -2,56 +2,99 @@
 {% block title %}Explore & Interact with Data{% endblock %}
 
 {% block head %}
-    {{ super() }}
+{{ super() }}
+<style type="text/css">
+    .popover {
+        max-width: 100%;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-    {% raw %}
-    <div ng-app="viz">
-        <div ng-cloak ng-controller="VisualizationController as v">
-            <div class="table-responsive">
-                <table class="table table-condensed table-bordered table-striped">
-                    <tr ng-repeat="star in stars track by star.hip">
-                        <td ng-repeat="(k, v) in star">{{ v }}</td>
-                    </tr>
-                </table>
-            </div>
+{% raw %}
+<div ng-app="viz">
+    <div ng-cloak ng-controller="VisualizationController as v">
+
+        <my-alert data-msg="alert_msg" data-type="alert_type"></my-alert>
+
+        <form style="margin-bottom: 10px;">
+            <input style="width: 83.333333%" type="text" class="form-control col-md-10 col-xs-10 col-sm-10" id="search"
+                   placeholder="Filter criteria"
+                   data-toggle="popover" data-placement="top" data-container="body" data-trigger="hover focus"
+                   data-html="true" title="Need help? Readme"
+                   data-content="you can try any of these,<ul><li>hip = 7444</li><li>dist > 20 and disk = thin</li><li>rascension > 300 or declination < 50</li></ul>">
+            <button type="submit" style="margin-left: 10px;" class="btn btn-primary col-md-1 col-xs-1 col-sm-1">Filter</button>
+            <div class="clearfix"></div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-condensed table-bordered table-striped">
+                <thead>
+                <tr>
+                    <th ng-repeat="c in columns">{{c}}</th>
+                </tr>
+                </thead>
+                <tr ng-repeat="star in stars track by star.hip">
+                    <td ng-repeat="c in columns">{{ star[c] }}</td>
+                </tr>
+            </table>
         </div>
     </div>
-    {% endraw %}
-    <script type="text/javascript" src="/static/bower_components/angular/angular.min.js"></script>
-    <script type="text/javascript" src="/static/bower_components/jquery/dist/jquery.min.js"></script>
-    <script type="text/javascript" src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+</div>
+{% endraw %}
+<script type="text/javascript" src="/static/bower_components/angular/angular.min.js"></script>
+<script type="text/javascript" src="/static/bower_components/angular-sanitize/angular-sanitize.min.js"></script>
+<script type="text/javascript" src="/static/bower_components/jquery/dist/jquery.min.js"></script>
+<script type="text/javascript" src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 
-    <script type="text/javascript">
-        (function (angular) {
-            const app = angular.module('viz', []);
+<script type="text/javascript">
+    (function (angular) {
+        const app = angular.module('viz', ['ngSanitize']);
 
-            app.controller('VisualizationController', function ($scope, StarService) {
-                StarService.stars().then(function(data) {
-                    $scope.stars = data['stars'];
-                });
-
-                $scope.stringit = function(d) {
-                    return JSON.stringify(d);
+        app.controller('VisualizationController', function ($scope, StarService) {
+            $scope.columns = ['hip', 'hd', 'hr', 'spec', 'vmag', 'bv', 'dist', 'rascension', 'declination', 'position', 'disk', 'uvw'];
+            StarService.stars().then(function (data) {
+                $scope.stars = data['stars'];
+                if (data['status']) {
+                    $scope.alert_type = 'success';
+                    $scope.alert_msg = data['status']['message'];
                 }
             });
 
-            app.factory('StarService', function ($http, $q) {
-                return {
-                    "stars": function() {
-                        let deferred = $q.defer();
-                        $http.get('/stars/0/10').success(function(data) {
-                            deferred.resolve(data);
-                        }).error(function(err) {
-                            deferred.reject(err);
-                        });
-                        return deferred.promise;
-                    }
+            $scope.stringit = function (d) {
+                return JSON.stringify(d);
+            }
+        });
+
+        app.directive('myAlert', function () {
+            return {
+                restrict: 'E',
+                scope: {
+                    msg: '=',
+                    type: '='
+                },
+                templateUrl: '/partials/_my-alert.html'
+            }
+        });
+
+        app.factory('StarService', function ($http, $q) {
+            return {
+                "stars": function () {
+                    let deferred = $q.defer();
+                    $http.get('/stars/0/10').success(function (data) {
+                        deferred.resolve(data);
+                    }).error(function (err) {
+                        deferred.reject(err);
+                    });
+                    return deferred.promise;
                 }
-            });
+            }
+        });
+
+        // JQuery
+        $("#search").popover();
 
 
-        })(window.angular);
-    </script>
+    })(window.angular, window.$);
+</script>
 {% endblock %}
