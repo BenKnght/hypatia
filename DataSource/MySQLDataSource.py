@@ -78,14 +78,14 @@ class MySQL(DataSource):
 
     @staticmethod
     def execute(database, query, params):
+        con = None
         try:
             con = MySQL.get_connection(database)
-            c = con.cursor()
-            c.execute(query, params)
-            return {'rows': c.fetchall(), 'columns': c.column_names}
+            with con.cursor() as c:
+                c.execute(query, params)
+                return {'rows': c.fetchall(), 'columns': c.column_names}
         finally:
-            if c: c.close()
-            con.close()
+            if con: con.close()
 
     @staticmethod
     def get_connection(database='astronomy'):
@@ -95,18 +95,10 @@ class MySQL(DataSource):
         :param database: database name to connect to
         :return: open MySQL connection
         """
-        try:
-            # TODO: Do not use root to connect by default
-            host = os.environ['DB_HOSTNAME'] if 'DB_HOSTNAME' in os.environ else '127.0.0.1'
-            user = os.environ['DB_USERNAME'] if 'DB_USERNAME' in os.environ else 'root'
-            password = os.environ['DB_PASSWORD'] if 'DB_PASSWORD' in os.environ else 'root'
-            connection = mysql.connector.connect(user=user, password=password, database=database, host=host)
-            connection.sql_mode = ''  # Disable strict mode
-            return connection
-        except mysql.connector.Error as err:
-            if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-                logger.warning("Something is wrong with your user name or password")
-            elif err.errno == errorcode.ER_BAD_DB_ERROR:
-                logger.warning("Database does not exist")
-            else:
-                logger.warning(err)
+        # TODO: Do not use root to connect by default
+        host = os.environ['DB_HOSTNAME'] if 'DB_HOSTNAME' in os.environ else '127.0.0.1'
+        user = os.environ['DB_USERNAME'] if 'DB_USERNAME' in os.environ else 'root'
+        password = os.environ['DB_PASSWORD'] if 'DB_PASSWORD' in os.environ else 'root'
+        connection = mysql.connector.connect(user=user, password=password, database=database, host=host)
+        connection.sql_mode = ''  # Disable strict mode
+        return connection

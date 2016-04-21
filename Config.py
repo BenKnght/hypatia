@@ -1,6 +1,7 @@
-import logging
+import logging, sys
 
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.StreamHandler(sys.stdout))
 
 
 def setup_logging(filehandler=None):

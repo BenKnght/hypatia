@@ -23,7 +23,8 @@
                    data-toggle="popover" data-placement="top" data-container="body" data-trigger="hover focus"
                    data-html="true" title="Need help? Readme"
                    data-content="you can try any of these,<ul><li>hip = 7444</li><li>dist > 20 and disk = thin</li><li>rascension > 300 or declination < 50</li></ul>">
-            <button type="submit" style="margin-left: 10px;" class="btn btn-primary col-md-1 col-xs-1 col-sm-1">Filter</button>
+            <button type="submit" style="margin-left: 10px;" class="btn btn-primary col-md-1 col-xs-1 col-sm-1">Filter
+            </button>
             <div class="clearfix"></div>
         </form>
 
@@ -58,6 +59,11 @@
                 if (data['status']) {
                     $scope.alert_type = 'success';
                     $scope.alert_msg = data['status']['message'];
+                }
+            }, function (err) {
+                if (err['status']) {
+                    $scope.alert_type = 'danger';
+                    $scope.alert_msg = err['status']['message'];
                 }
             });
 

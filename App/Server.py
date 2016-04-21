@@ -78,11 +78,15 @@ def upload():
 
 @app.route('/stars/<int:page>/<int:limit>')
 def stars(page, limit):
-    query = "SELECT * FROM star LIMIT %s OFFSET %s"
-    db_res = MySQL.execute(DATABASE, query, [limit, page * limit])
-    resp = [dict(zip(db_res['columns'], [str(t) if type(t) is bytearray else t for t in row])) for row in
-            db_res['rows']]
-    return jsonify({'stars': resp, "status": {"message": "Fetched %s stars" % (len(resp),)}})
+    try:
+        query = "SELECT * FROM star LIMIT %s OFFSET %s"
+        db_res = MySQL.execute(DATABASE, query, [limit, page * limit])
+        resp = [dict(zip(db_res['columns'], [str(t) if type(t) is bytearray else t for t in row])) for row in
+                db_res['rows']]
+        return jsonify({'stars': resp, "status": {"message": "Fetched %s stars" % (len(resp),)}})
+    except Exception as err:
+        logger.exception(err)
+        return jsonify({"status": {"message": "Something went wrong"}}), 500
 
 
 @app.route('/star/<hip>/elements')
