@@ -32,5 +32,5 @@ def run(input_file):
 
 if __name__ == '__main__':
     Config.setup_logging()
-    run('/Volumes/350GB/Projects/RA/Assets/test_inp.txt')
-    # run('/Volumes/350GB/Projects/RA/Assets/hypatia_norm_16_01_10.txt')
+    # run('./Assets/test_inp.txt')
+    run('./Assets/hypatia_norm_16_01_10.txt')

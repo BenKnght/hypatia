@@ -16,16 +16,16 @@ from Config import logger
 
 app = Flask(__name__)
 
-LOG_DIR = os.environ['LOGFILES_PATH']
-UPLOADS_DIR = os.environ['DATAFILES_PATH']
-DATABASE = os.environ['DB_NAME'] if 'DB_NAME' in os.environ else 'astronomy_test'
+LOG_DIR = os.environ['LOGFILES_PATH'] if 'LOGFILES_PATH' in os.environ else './logs/'
+UPLOADS_DIR = os.environ['DATAFILES_PATH'] if 'DATAFILES_PATH' in os.environ else './uploads/'
+DATABASE = os.environ['DB_NAME'] if 'DB_NAME' in os.environ else 'astronomy'
 
 
 # HTML Services
 @app.route('/')
 def index():
     # return render_template('import.html')
-    return visualize()
+    return explore()
 
 
 @app.route('/import')
@@ -36,6 +36,11 @@ def import_data():
 @app.route('/visualize')
 def visualize():
     return render_template('visualization.html')
+
+
+@app.route('/explore')
+def explore():
+    return render_template('explore.html')
 
 
 @app.route('/log/<filename>')
@@ -71,11 +76,20 @@ def upload():
             c.close()
 
 
+@app.route('/stars/<int:page>/<int:limit>')
+def stars(page, limit):
+    query = "SELECT * FROM star LIMIT %s OFFSET %s"
+    db_res = MySQL.execute(DATABASE, query, [limit, page * limit])
+    resp = [dict(zip(db_res['columns'], [str(t) if type(t) is bytearray else t for t in row])) for row in
+            db_res['rows']]
+    return jsonify({'stars': resp, "status": {"message": "Fetched %s stars" % (len(resp),)}})
+
+
 @app.route('/star/<hip>/elements')
 def elements_of_star(hip):
     query = """SELECT DISTINCT element FROM composition
                 WHERE hip = %s"""
-    res = map(lambda e: e[0], MySQL.execute(DATABASE, query, [hip]))
+    res = map(lambda e: e[0], MySQL.execute(DATABASE, query, [hip])['rows'])
     return jsonify({'elements': res})
 
 
@@ -87,7 +101,7 @@ def compositions_of_star(hip):
                 FROM composition WHERE hip = %s AND element IN ({})
                 GROUP BY element;""".format(in_clause)
     res = {}
-    for k, v in MySQL.execute(DATABASE, query, [hip] + elements):
+    for k, v in MySQL.execute(DATABASE, query, [hip] + elements)['rows']:
         res[k] = v
     return jsonify(res)
 

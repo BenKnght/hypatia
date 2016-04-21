@@ -1,0 +1,57 @@
+{% extends "index.html" %}
+{% block title %}Explore & Interact with Data{% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block content %}
+    {% raw %}
+    <div ng-app="viz">
+        <div ng-cloak ng-controller="VisualizationController as v">
+            <div class="table-responsive">
+                <table class="table table-condensed table-bordered table-striped">
+                    <tr ng-repeat="star in stars track by star.hip">
+                        <td ng-repeat="(k, v) in star">{{ v }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endraw %}
+    <script type="text/javascript" src="/static/bower_components/angular/angular.min.js"></script>
+    <script type="text/javascript" src="/static/bower_components/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
+    <script type="text/javascript">
+        (function (angular) {
+            const app = angular.module('viz', []);
+
+            app.controller('VisualizationController', function ($scope, StarService) {
+                StarService.stars().then(function(data) {
+                    $scope.stars = data['stars'];
+                });
+
+                $scope.stringit = function(d) {
+                    return JSON.stringify(d);
+                }
+            });
+
+            app.factory('StarService', function ($http, $q) {
+                return {
+                    "stars": function() {
+                        let deferred = $q.defer();
+                        $http.get('/stars/0/10').success(function(data) {
+                            deferred.resolve(data);
+                        }).error(function(err) {
+                            deferred.reject(err);
+                        });
+                        return deferred.promise;
+                    }
+                }
+            });
+
+
+        })(window.angular);
+    </script>
+{% endblock %}

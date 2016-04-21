@@ -82,7 +82,7 @@ class MySQL(DataSource):
             con = MySQL.get_connection(database)
             c = con.cursor()
             c.execute(query, params)
-            return c.fetchall()
+            return {'rows': c.fetchall(), 'columns': c.column_names}
         finally:
             if c: c.close()
             con.close()
