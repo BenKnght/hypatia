@@ -91,23 +91,30 @@ def stars(page, limit):
 
 @app.route('/star/<hip>/elements')
 def elements_of_star(hip):
-    query = """SELECT DISTINCT element FROM composition
-                WHERE hip = %s"""
-    res = map(lambda e: e[0], MySQL.execute(DATABASE, query, [hip])['rows'])
-    return jsonify({'elements': res})
+    try:
+        query = "SELECT DISTINCT element FROM composition WHERE hip = %s"
+        res = map(lambda e: e[0], MySQL.execute(DATABASE, query, [hip])['rows'])
+        return jsonify({'elements': res})
+    except Exception as err:
+        logger.exception(err)
+        return jsonify({"status": {"message": "Something went wrong"}}), 500
 
 
 @app.route('/star/<hip>/compositions')
 def compositions_of_star(hip):
-    elements = request.args.getlist('elements')
-    in_clause = ','.join(['%s'] * len(elements))
-    query = """SELECT element, AVG(value)
-                FROM composition WHERE hip = %s AND element IN ({})
-                GROUP BY element;""".format(in_clause)
-    res = {}
-    for k, v in MySQL.execute(DATABASE, query, [hip] + elements)['rows']:
-        res[k] = v
-    return jsonify(res)
+    try:
+        elements = request.args.getlist('elements')
+        in_clause = ','.join(['%s'] * len(elements))
+        query = """SELECT element, AVG(value)
+                    FROM composition WHERE hip = %s AND element IN ({})
+                    GROUP BY element;""".format(in_clause)
+        res = {}
+        for k, v in MySQL.execute(DATABASE, query, [hip] + elements)['rows']:
+            res[k] = v
+        return jsonify(res)
+    except Exception as err:
+        logger.exception(err)
+        return jsonify({"status": {"message": "Something went wrong"}}), 500
 
 
 def main():

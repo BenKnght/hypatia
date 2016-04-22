@@ -81,11 +81,11 @@ class MySQL(DataSource):
         con = None
         try:
             con = MySQL.get_connection(database)
-            with con.cursor() as c:
-                c.execute(query, params)
-                return {'rows': c.fetchall(), 'columns': c.column_names}
+            c = con.cursor()
+            c.execute(query, params)
+            return {'rows': c.fetchall(), 'columns': c.column_names}
         finally:
-            if con: con.close()
+            if con: con.close(); c.close();
 
     @staticmethod
     def get_connection(database='astronomy'):
