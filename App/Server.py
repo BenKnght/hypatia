@@ -4,6 +4,7 @@
 import os
 import time
 import logging
+import re
 from flask import jsonify
 from flask import Flask, request
 from flask import render_template
@@ -13,6 +14,7 @@ import Importer
 from DataSource.MySQLDataSource import MySQL
 import Config
 from Config import logger
+from Utils.utils import upsert_dict
 
 app = Flask(__name__)
 
@@ -83,16 +85,37 @@ def upload():
 @app.route('/stars/<int:page>/<int:limit>')
 def stars(page, limit):
     """
-    Retrieve stars page by page
+    Retrieve requested number of stars of a given page satisfying a condition
     :param page: page number
     :param limit: number of stars in this page
     :return:
     """
     try:
+        # TODO: Possible SQL injection due to WHERE clause
         query = "SELECT * FROM star WHERE {} LIMIT %s OFFSET %s".format(request.args.get("query") or "1 = 1")
         db_res = MySQL.execute(DATABASE, query, [limit, page * limit])
         resp = [dict(zip(db_res['columns'], [str(t) if type(t) is bytearray else t for t in row])) for row in
                 db_res['rows']]
+        return jsonify({'stars': resp, "status": {"message": "Fetched %s stars" % (len(resp),)}})
+    except Exception as err:
+        logger.exception(err)
+        return jsonify({"status": {"message": "Something went wrong"}}), 500
+
+
+@app.route('/plots/composition/<stars>')
+def composition_scatter(stars):
+    """
+    Average composition of each element of the star for all catalogs
+    :param stars: a comma separated string of star hips
+    :return: {hip1: {FeH: 0.5, OH: -0.07, ...}, {hip2: {CO: 0.09, ...}}
+    """
+    try:
+        query = "SELECT hip, element, AVG(value) as value FROM composition WHERE hip IN (%s) GROUP BY hip, element;"
+        in_str = re.sub(r'\s*\d+\s*', '%s', stars)
+        db_res = MySQL.execute(DATABASE, query % (in_str,), map(lambda s: s.strip(), stars.split(",")))
+        resp = {}
+        for row in db_res['rows']:
+            upsert_dict(resp, row[0], row[1], row[2])
         return jsonify({'stars': resp, "status": {"message": "Fetched %s stars" % (len(resp),)}})
     except Exception as err:
         logger.exception(err)

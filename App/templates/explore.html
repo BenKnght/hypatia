@@ -3,6 +3,8 @@
 
 {% block head %}
 {{ super() }}
+<link href="/static/bower_components/amcharts/dist/amcharts/plugins/export/export.css" media="all" rel="stylesheet"
+      type="text/css"/>
 <link href="/static/bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css" rel="stylesheet"/>
 <style type="text/css">
     .popover {
@@ -20,16 +22,20 @@
         <!--TODO: alert doesnt show the message-->
         <!--<my-alert data-msg="alert_msg" data-type="alert_type"></my-alert>-->
 
-        <form style="margin-bottom: 10px;" ng-submit="filterStars()">
+        <form style="margin-bottom: 10px;" ng-submit="filterStars($event)">
             <input style="width: 83.333333%" type="text" class="form-control col-md-10 col-xs-10 col-sm-10" id="search"
                    placeholder="Filter criteria" ng-focus="openSuggestions()"
                    data-toggle="popover" data-placement="top" data-container="body" data-trigger="hover focus"
                    data-html="true" title="Need help? Readme" ng-model="filterText"
-                   data-content="you can try any of these,<ul><li>hip = 7444</li><li>dist > 20 and disk = thin</li><li>rascension > 300 or declination < 50</li></ul>">
+                   data-content="you can try any of these,<ul><li>hip = '7444'</li><li>dist > 20 and disk = 'thin'</li><li>rascension > 300 or declination < 50</li></ul>">
             <button type="submit" style="margin-left: 10px;" class="btn btn-primary col-md-1 col-xs-1 col-sm-1">Filter
             </button>
             <div class="clearfix"></div>
         </form>
+
+        <div class="panel panel-default">
+            <div class="panel-body" id="chart" style="width: 100%; height: 500px;"></div>
+        </div>
 
         <div class="table-responsive">
             <table class="table table-condensed table-bordered table-striped">
@@ -53,6 +59,11 @@
 <script type="text/javascript" src="/static/bower_components/angular-sanitize/angular-sanitize.min.js"></script>
 <script type="text/javascript" src="/static/bower_components/jquery/dist/jquery.min.js"></script>
 <script type="text/javascript" src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="/static/bower_components/amcharts/dist/amcharts/amcharts.js"></script>
+<script type="text/javascript" src="/static/bower_components/amcharts/dist/amcharts/xy.js"></script>
+<script type="text/javascript"
+        src="/static/bower_components/amcharts/dist/amcharts/plugins/export/export.min.js"></script>
+
 <script type="text/javascript" src="/static/bower_components/jquery-ui/ui/core.js"></script>
 <script type="text/javascript" src="/static/bower_components/jquery-ui/ui/widget.js"></script>
 <script type="text/javascript" src="/static/bower_components/jquery-ui/ui/position.js"></script>
@@ -62,7 +73,7 @@
 <script type="text/javascript" src="/static/js/StateMachine.js"></script>
 
 <script type="text/javascript">
-    (function (angular, $) {
+    (function (angular, $, AmCharts) {
         const app = angular.module('viz', ['ngSanitize']).config(['$locationProvider',
             function ($locationProvider) {
                 $locationProvider.html5Mode(true);
@@ -75,14 +86,15 @@
             }
         }
 
-        app.controller('VisualizationController', function ($scope, $location, StarService, $q) {
+        app.controller('VisualizationController', function ($scope, $location, StarService, PlotService, $q) {
             $scope.columns = ['hip', 'hd', 'hr', 'spec', 'vmag', 'bv', 'dist', 'rascension', 'declination', 'position', 'disk', 'uvw'];
             $scope.stars = [];
             // TODO: Update URL to make it sharable
             // $location.search({"search": "hip>100"});
 
             let pageNumber = 0, pageSize = 25;
-            $scope.filterStars = function (e) {
+
+            function fetchStars() {
                 let deferred = $q.defer();
                 StarService.stars(pageNumber, pageSize, $scope.filterText).then(function (data) {
                     if (data['stars'].length < pageSize)
@@ -91,17 +103,23 @@
                     let stars = $scope.stars;
                     $scope.stars = stars.concat(data['stars']);
                     setAlertMsg(data, $scope, 'success');
+                    updateChart();
                     deferred.resolve();
                 }, function (err) {
                     setAlertMsg(err, $scope, 'danger');
                     deferred.reject();
                 });
-                if (e)
-                    e.preventDefault();
                 return deferred.promise;
+            }
+
+            $scope.filterStars = function (e) {
+                e.preventDefault();
+                pageNumber = 0; // reset page
+                $scope.stars = []; // clear stars to make way for new set
+                return fetchStars();
             };
             function initPage() {
-                $scope.filterStars().then(function () {
+                fetchStars().then(function () {
                     pageNumber++;
                     // Keep loading more stars until the user's screen is full
                     if ($(document).height() < $(window).height())
@@ -118,61 +136,120 @@
                 // network i/o = 60ms,
                 if ($(window).scrollTop() == $(document).height() - $(window).height()) {
                     pageNumber++;
-                    $scope.filterStars();
+                    fetchStars();
+                }
+            });
+
+            function updateChart() {
+                let hips = $scope.stars.map(function (star) {
+                    return star.hip;
+                });
+                PlotService.scatter(hips).then(function (data) {
+                    /**
+                     * Sample data:
+                     * stars: {
+                                    7444: {
+                                        AlH: -0.029999999329447746,
+                                        CaH: -0.10999999940395355,
+                                        FeH: -0.17000000178813934,
+                                        MgH: 0.10000000149011612,
+                                        OH: 0.07000000029802322,
+                                        TiH: 0.20999999344348907
+                                    },
+                               }
+                     */
+                    $scope.chart.dataProvider = [];
+                    for (let star in data['stars']) {
+                        let composition = data['stars'][star];
+                        try {
+                            $scope.chart.dataProvider.push({
+                                x: composition['FeH'],
+                                y: composition['AlH'],
+                                value: `Star: ${star}<br />FeH: ${composition['FeH']}<br />AlH: ${composition['AlH']}`
+                            });
+                        }
+                        catch (err) {
+                            console.log(`For star, ${star}. Error: ${err}`);
+                        }
+                    }
+                    $scope.chart.validateData();
+                });
+            }
+
+            // Charting
+            $scope.chart = AmCharts.makeChart("chart", {
+                "type": "xy",
+                "autoMargins": true,
+                "autoMarginOffset": 20,
+                "handDrawn": true,
+                "addClassNames": false,
+                "graphs": [
+                    {
+                        "bullet": "diamond",
+                        "bulletSize": 20,
+                        "lineAlpha": 0,
+                        "valueField": "value",
+                        "xField": "x",
+                        "yField": "y"
+                    }
+                ],
+                "dataProvider": [],
+                "export": {
+                    "enabled": true
                 }
             });
 
             // Filter Textbox
-            let start = new State($scope.columns);
-            let filterExpr = new StateMachine(start); // key
-            filterExpr.next(new State(['>', '<', '=', '<=', '>='])); // operator
-            filterExpr.next(new State([], true)); // values
-            filterExpr.next(new State(['AND', 'OR'])); // combiner
-            filterExpr.next(start);
-            window.myState = filterExpr;
-            let filterTokens = [], states = [];
-
-            function suggest(request, response) {
-                // console.log(filterExpr.current.values);
-                response(filterExpr.current.values);
-            }
-
-            function moveToNextState(newItem) {
-                filterTokens.push(newItem);
-                this.value = filterTokens.join(" ") + " ";
-                states.push(filterExpr.current); // TODO: handle when user starting modifying existing expression
-                filterExpr.next(); // move to next state
-                $scope.openSuggestions();
-            }
-
-            function getTokens(filterText) {
-                // tokens are separated by a space
-                return filterText.split(/\s+/);
-            }
-
-            function selected(event, ui) {
-                moveToNextState.call(this, ui.item.value.trim());
-                return false; // prevent default behavior of replacing the entire input field's value
-            }
-
-            $scope.openSuggestions = function () {
-                $("#search").autocomplete("search"); // open suggestions
-            };
-            $("#search").bind('keypress', function (event) {
-                if (event.keyCode === $.ui.keyCode.SPACE) {
-                    // Move to next state
-                    moveToNextState.call(this, getTokens(this.value.trim()).pop());
-                    event.preventDefault();
-                }
-            }).autocomplete({
-                source: suggest,
-                select: selected, minLength: 0,
-                focus: function () {
-                    return false;
-                }
-            });
-
-            $("#search").autocomplete("disable"); // TODO: disabled until entire control is ready
+//            let start = new State($scope.columns);
+//            let filterExpr = new StateMachine(start); // key
+//            filterExpr.next(new State(['>', '<', '=', '<=', '>='])); // operator
+//            filterExpr.next(new State([], true)); // values
+//            filterExpr.next(new State(['AND', 'OR'])); // combiner
+//            filterExpr.next(start);
+//            window.myState = filterExpr;
+//            let filterTokens = [], states = [];
+//
+//            function suggest(request, response) {
+//                // console.log(filterExpr.current.values);
+//                response(filterExpr.current.values);
+//            }
+//
+//            function moveToNextState(newItem) {
+//                filterTokens.push(newItem);
+//                this.value = filterTokens.join(" ") + " ";
+//                states.push(filterExpr.current); // TODO: handle when user starting modifying existing expression
+//                filterExpr.next(); // move to next state
+//                $scope.openSuggestions();
+//            }
+//
+//            function getTokens(filterText) {
+//                // tokens are separated by a space
+//                return filterText.split(/\s+/);
+//            }
+//
+//            function selected(event, ui) {
+//                moveToNextState.call(this, ui.item.value.trim());
+//                return false; // prevent default behavior of replacing the entire input field's value
+//            }
+//
+//            $scope.openSuggestions = function () {
+//                $("#search").autocomplete("search"); // open suggestions
+//            };
+//            $("#search").bind('keypress', function (event) {
+//                if (event.keyCode === $.ui.keyCode.SPACE) {
+//                    // Move to next state
+//                    moveToNextState.call(this, getTokens(this.value.trim()).pop());
+//                    event.preventDefault();
+//                }
+//            }).autocomplete({
+//                source: suggest,
+//                select: selected, minLength: 0,
+//                focus: function () {
+//                    return false;
+//                }
+//            });
+//
+//            $("#search").autocomplete("disable"); // TODO: disabled until entire control is ready
         });
 
         app.directive('myAlert', function () {
@@ -200,10 +277,24 @@
             }
         });
 
+        app.factory('PlotService', function ($http, $q) {
+            return {
+                "scatter": function (stars=[]) {
+                    let deferred = $q.defer();
+                    $http.get(`/plots/composition/${stars.join(",")}`).success(function (data) {
+                        deferred.resolve(data);
+                    }).error(function (err) {
+                        deferred.reject(err);
+                    });
+                    return deferred.promise;
+                }
+            }
+        });
+
         // JQuery
         $("#search").popover();
 
 
-    })(window.angular, window.$);
+    })(window.angular, window.$, window.AmCharts);
 </script>
 {% endblock %}
