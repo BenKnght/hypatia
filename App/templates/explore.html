@@ -14,15 +14,17 @@
 {% block content %}
 {% raw %}
 <div ng-app="viz">
+    <base href="/"/>
     <div ng-cloak ng-controller="VisualizationController as v">
 
-        <my-alert data-msg="alert_msg" data-type="alert_type"></my-alert>
+        <!--TODO: alert doesnt show the message-->
+        <!--<my-alert data-msg="alert_msg" data-type="alert_type"></my-alert>-->
 
-        <form style="margin-bottom: 10px;">
+        <form style="margin-bottom: 10px;" ng-submit="filterStars()">
             <input style="width: 83.333333%" type="text" class="form-control col-md-10 col-xs-10 col-sm-10" id="search"
                    placeholder="Filter criteria" ng-focus="openSuggestions()"
                    data-toggle="popover" data-placement="top" data-container="body" data-trigger="hover focus"
-                   data-html="true" title="Need help? Readme"
+                   data-html="true" title="Need help? Readme" ng-model="filterText"
                    data-content="you can try any of these,<ul><li>hip = 7444</li><li>dist > 20 and disk = thin</li><li>rascension > 300 or declination < 50</li></ul>">
             <button type="submit" style="margin-left: 10px;" class="btn btn-primary col-md-1 col-xs-1 col-sm-1">Filter
             </button>
@@ -32,6 +34,9 @@
         <div class="table-responsive">
             <table class="table table-condensed table-bordered table-striped">
                 <thead>
+                <tr>
+                    <th colspan="12">Showing {{stars.length}} stars</th>
+                </tr>
                 <tr>
                     <th ng-repeat="c in columns">{{c}}</th>
                 </tr>
@@ -58,7 +63,10 @@
 
 <script type="text/javascript">
     (function (angular, $) {
-        const app = angular.module('viz', ['ngSanitize']);
+        const app = angular.module('viz', ['ngSanitize']).config(['$locationProvider',
+            function ($locationProvider) {
+                $locationProvider.html5Mode(true);
+            }]);
 
         function setAlertMsg(data, $scope, type='info') {
             if (data['status']) {
@@ -67,16 +75,54 @@
             }
         }
 
-        app.controller('VisualizationController', function ($scope, StarService) {
+        app.controller('VisualizationController', function ($scope, $location, StarService, $q) {
             $scope.columns = ['hip', 'hd', 'hr', 'spec', 'vmag', 'bv', 'dist', 'rascension', 'declination', 'position', 'disk', 'uvw'];
-            StarService.stars().then(function (data) {
-                $scope.stars = data['stars'];
-                setAlertMsg(data, $scope, 'success');
-            }, function (err) {
-                setAlertMsg(err, $scope, 'danger');
+            $scope.stars = [];
+            // TODO: Update URL to make it sharable
+            // $location.search({"search": "hip>100"});
+
+            let pageNumber = 0, pageSize = 25;
+            $scope.filterStars = function (e) {
+                let deferred = $q.defer();
+                StarService.stars(pageNumber, pageSize, $scope.filterText).then(function (data) {
+                    if (data['stars'].length < pageSize)
+                        deferred.reject(); // fetched all stars
+                    // console.log(`Stars ${data['stars'].length}. Page ${pageNumber}`);
+                    let stars = $scope.stars;
+                    $scope.stars = stars.concat(data['stars']);
+                    setAlertMsg(data, $scope, 'success');
+                    deferred.resolve();
+                }, function (err) {
+                    setAlertMsg(err, $scope, 'danger');
+                    deferred.reject();
+                });
+                if (e)
+                    e.preventDefault();
+                return deferred.promise;
+            };
+            function initPage() {
+                $scope.filterStars().then(function () {
+                    pageNumber++;
+                    // Keep loading more stars until the user's screen is full
+                    if ($(document).height() < $(window).height())
+                        initPage();
+                });
+
+            }
+
+            initPage();
+
+            $(window).scroll(function () {
+                // Pre-fetch the stars before user hits the bottom to get a smooth user experience
+                // 120 is arrived assuming user takes 0.5s to scroll one a screen of 1000px long and
+                // network i/o = 60ms,
+                if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+                    pageNumber++;
+                    $scope.filterStars();
+                }
             });
 
-
+            // Filter Textbox
             let start = new State($scope.columns);
             let filterExpr = new StateMachine(start); // key
             filterExpr.next(new State(['>', '<', '=', '<=', '>='])); // operator
@@ -87,7 +133,7 @@
             let filterTokens = [], states = [];
 
             function suggest(request, response) {
-                console.log(filterExpr.current.values);
+                // console.log(filterExpr.current.values);
                 response(filterExpr.current.values);
             }
 
@@ -125,6 +171,8 @@
                     return false;
                 }
             });
+
+            $("#search").autocomplete("disable"); // TODO: disabled until entire control is ready
         });
 
         app.directive('myAlert', function () {
@@ -140,9 +188,9 @@
 
         app.factory('StarService', function ($http, $q) {
             return {
-                "stars": function () {
+                "stars": function (pageNumber, pageSize, query=null) {
                     let deferred = $q.defer();
-                    $http.get('/stars/0/10').success(function (data) {
+                    $http.get(`/stars/${pageNumber}/${pageSize}`, {params: {'query': query}}).success(function (data) {
                         deferred.resolve(data);
                     }).error(function (err) {
                         deferred.reject(err);

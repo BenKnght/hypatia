@@ -56,6 +56,10 @@ def send_partial(filename):
 # Services
 @app.route('/upload', methods=['POST'])
 def upload():
+    """
+    Imports a file and saves to DB
+    :return:
+    """
     datafile = request.files['file']
     c = MySQL.get_connection(DATABASE)
     if datafile:
@@ -78,8 +82,14 @@ def upload():
 
 @app.route('/stars/<int:page>/<int:limit>')
 def stars(page, limit):
+    """
+    Retrieve stars page by page
+    :param page: page number
+    :param limit: number of stars in this page
+    :return:
+    """
     try:
-        query = "SELECT * FROM star LIMIT %s OFFSET %s"
+        query = "SELECT * FROM star WHERE {} LIMIT %s OFFSET %s".format(request.args.get("query") or "1 = 1")
         db_res = MySQL.execute(DATABASE, query, [limit, page * limit])
         resp = [dict(zip(db_res['columns'], [str(t) if type(t) is bytearray else t for t in row])) for row in
                 db_res['rows']]
@@ -91,6 +101,11 @@ def stars(page, limit):
 
 @app.route('/star/<hip>/elements')
 def elements_of_star(hip):
+    """
+    Fetches the elements of a star
+    :param hip: hip of the star
+    :return:
+    """
     try:
         query = "SELECT DISTINCT element FROM composition WHERE hip = %s"
         res = map(lambda e: e[0], MySQL.execute(DATABASE, query, [hip])['rows'])
@@ -102,6 +117,12 @@ def elements_of_star(hip):
 
 @app.route('/star/<hip>/compositions')
 def compositions_of_star(hip):
+    """
+    Retrieves composition of a star
+    If an element has multiple values from different catalogs, average value is returned
+    :param hip: hip of the star
+    :return: {FeH: 0.5, OH: -0.6}
+    """
     try:
         elements = request.args.getlist('elements')
         in_clause = ','.join(['%s'] * len(elements))
