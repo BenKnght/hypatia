@@ -1,3 +1,4 @@
+import os
 from Config import logger
 from DataSource.MySQLDataSource import MySQL
 from Parser.HypatiaParser import HypatiaParser
@@ -32,5 +33,5 @@ def run(input_file):
 
 if __name__ == '__main__':
     Config.setup_logging()
-    # run('./Assets/test_inp.txt')
-    run('./Assets/hypatia_norm_16_01_10.txt')
+    run('./Assets/test_inp.txt')
+    # run('./Assets/hypatia_norm_16_01_10.txt')

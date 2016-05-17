@@ -22,6 +22,8 @@ class HypatiaParser(Parser):
         'b-v': 'bv',
         'dist (pc)': 'dist',
         'ra/dec': ['rascension', 'declination'],
+        'ra': 'rascension',
+        'dec': 'declination',
         'position': 'position',
         'disk component': 'disk',
         'uvw': 'uvw'
@@ -40,7 +42,8 @@ class HypatiaParser(Parser):
                     logger.info("Started parsing star (%s)", i)
                     s = Star(None)
                     elements = []  # a list of catalogue and composition instances for the star
-                    raw_star_attrs = raw_star.split("\n")  # Assumption 251021: Each attribute of the star is on its own line
+                    raw_star_attrs = raw_star.split(
+                        "\n")  # Assumption 251021: Each attribute of the star is on its own line
                     for raw_attr in raw_star_attrs:
                         # Split attributes and values of the star. They are separated by a '=' or ':'
                         # Once split, the last entity is value and the last but one is the key
@@ -49,13 +52,12 @@ class HypatiaParser(Parser):
                             key = attr_value[-2].lower().strip()
                             value = attr_value[-1].strip()
                             if key in self.hypatia_column_map:
-                                if key == 'ra/dec':
-                                    m = re.match(r'\((.+),(.+)\)', value)
-                                    ra, dec = m.groups()
-                                    s.set('rascension', float(ra.strip()))
-                                    s.set('declination', float(dec.strip()))
-                                else:
-                                    s.set(self.hypatia_column_map[key], value)
+                                # Handling NULL values
+                                if value == '999.0' and key != 'uvw':
+                                    value = None
+                                elif value.find('9999.0') >= 0 and key == 'uvw':
+                                    value = None
+                                s.set(self.hypatia_column_map[key], value)
                         else:
                             comp_cat = re.match(r'(\w+)(.*)\[(.+)\]', raw_attr)
                             if comp_cat:
@@ -65,7 +67,7 @@ class HypatiaParser(Parser):
                                 elements.append([catalogue, composition])
                             else:
                                 logger.warning('Unknown composition of star, "%s". Line unable to parse: "%s"',
-                                                s.columns['hip'], raw_attr)
+                                               s.columns['hip'], raw_attr)
                     yield [s, elements]
                 except:
                     # Pass the exception to be handled at the higher level
