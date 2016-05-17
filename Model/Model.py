@@ -1,4 +1,4 @@
-import datetime
+import datetime, json
 from DataSource.MySQLDataSource import MySQL
 
 
@@ -79,3 +79,6 @@ class Model(object):
         connection.commit()  # TODO: Decide if this is OK as rollbacks can be difficult
         c.close()
         return True
+
+    def __str__(self):
+        return json.dumps(self.columns)

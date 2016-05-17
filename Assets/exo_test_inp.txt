@@ -1,0 +1,86 @@
+Star: hip = 77783
+hd = 142245
+bd = B+15 2925
+dist (pc) = 109.529
+RA = 238.235
+Dec = 15.431
+Position = [-91.086, 52.929, 29.975]
+UVW = (-1.00, -24.40, 19.80)
+Disk component: thin
+Spec Type = K0
+Vmag = 7.6302
+B-V = 1.036
+Teff = 4878.0
+logg = 3.3
+mass(M_S) = 1.69
+Vsini (km/s) = 2.66
+Multiple planets (0=N, 1=Y, 2=NA) = 0
+[b] M_p = 1.89038 +- 0.218694(M_J), P = 1299.0 +- 48.0(d), e = 0.0 +- 0.16, a = 2.77628 +- 0.0948437(AU)
+FeH 7.58 [Adamow et al. (2014)]
+OH 8.85 [Adamow et al. (2014)]
+MgH 7.65 [Adamow et al. (2014)]
+AlH 6.52 [Adamow et al. (2014)]
+CaH 6.44 [Adamow et al. (2014)]
+TiH 5.12 [Adamow et al. (2014)]
+
+Star: hip = 56572
+hd = 100777
+bd = B-03 3147
+dist (pc) = 49.603
+RA = 173.965
+Dec = -4.756
+Position = [-0.825, -1.987, 49.556]
+UVW = (-5.60, 3.70, 4.40)
+Disk component: thin
+Spec Type = K0
+Vmag = 8.5627
+B-V = 0.76
+Teff = 5582.0
+logg = 4.39
+mass(M_S) = 1.0
+Vsini (km/s) = 1.8
+Multiple planets (0=N, 1=Y, 2=NA) = 0
+[b] M_p = 1.16502 +- 0.082703(M_J), P = 383.70001 +- 1.2(d), e = 0.36 +- 0.02, a = 1.03378 +- 0.0345267(AU)
+FeH 7.72 [Adibekyan et al. (2012)]
+NaH 6.73 [Adibekyan et al. (2012)]
+MgH 7.867 [Adibekyan et al. (2012)]
+AlH 6.8 [Adibekyan et al. (2012)]
+SiH 7.886 [Adibekyan et al. (2012)]
+CaH 6.575 [Adibekyan et al. (2012)]
+ScH 3.423 [Adibekyan et al. (2012)]
+ScIIH 3.418 [Adibekyan et al. (2012)]
+TiH 5.277 [Adibekyan et al. (2012)]
+TiIIH 5.315 [Adibekyan et al. (2012)]
+VH 4.415 [Adibekyan et al. (2012)]
+CrH 5.931 [Adibekyan et al. (2012)]
+CrIIH 5.88 [Adibekyan et al. (2012)]
+MnH 5.788 [Adibekyan et al. (2012)]
+CoH 5.303 [Adibekyan et al. (2012)]
+NiH 6.566 [Adibekyan et al. (2012)]
+FeH 7.72 [Bertran de Lis et al. (2015)]
+OH 9.08 [Bertran de Lis et al. (2015)]
+FeH 7.85 [Brugamyer et al. (2011)]
+SiH 7.98 [Brugamyer et al. (2011)]
+OH 8.94 [Brugamyer et al. (2011)]
+FeH 7.72 [Delgado Mena et al. (2010)]
+OH 8.75 [Delgado Mena et al. (2010)]
+NiH 6.57 [Delgado Mena et al. (2010)]
+CH 8.76 [Delgado Mena et al. (2010)]
+MgH 7.81 [Delgado Mena et al. (2010)]
+SiH 7.82 [Delgado Mena et al. (2010)]
+SiH 7.86 [Neves et al. (2009)]
+CaH 6.56 [Neves et al. (2009)]
+ScH 3.43 [Neves et al. (2009)]
+ScIIH 3.43 [Neves et al. (2009)]
+TiH 5.28 [Neves et al. (2009)]
+TiIIH 5.23 [Neves et al. (2009)]
+VH 4.42 [Neves et al. (2009)]
+CrH 5.93 [Neves et al. (2009)]
+CrIIH 5.89 [Neves et al. (2009)]
+MnH 5.8 [Neves et al. (2009)]
+CoH 5.34 [Neves et al. (2009)]
+NiH 6.57 [Neves et al. (2009)]
+NaH 6.65 [Neves et al. (2009)]
+MgH 7.87 [Neves et al. (2009)]
+AlH 6.8 [Neves et al. (2009)]
+FeH 7.72 [Neves et al. (2009)]

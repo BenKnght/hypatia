@@ -20,7 +20,12 @@ class Star(Model):
         'declination': None,
         'position': None,
         'disk': None,
-        'uvw': None
+        'uvw': None,
+        'teff': None,
+        'logg': None,
+        'mass': None,
+        'vsini': None,
+        'multiple_planets': None,
     }
 
     def __init__(self, hip, **attr_values):

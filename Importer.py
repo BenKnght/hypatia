@@ -1,15 +1,14 @@
 import os
 from Config import logger
 from DataSource.MySQLDataSource import MySQL
-from Parser.HypatiaParser import HypatiaParser
+from Parser.HypatiaExoParser import HypatiaExoParser
 import Config
 
 
-def run(input_file):
-    c = MySQL.get_connection('astronomy_test')
-    p = HypatiaParser(input_file)
+def run(input_file, c=MySQL.get_connection('astronomy_test')):
+    p = HypatiaExoParser(input_file)
     if c:
-        for star, elements in p.next():
+        for star, elements, planets in p.next():
             try:
                 star.upsert(c)
                 logger.info('Saved star, "%s"\n', star.columns['hip'])
@@ -26,6 +25,9 @@ def run(input_file):
                     composition.set('hip', star.columns['hip'])
                     composition.set('cid', cid)
                     composition.upsert(c)
+                for planet in planets:
+                    planet.set('hip', star.columns['hip'])
+                    planet.upsert(c)
             except:
                 logger.exception('Saving star failed: "%s"')
         c.close()
@@ -33,5 +35,6 @@ def run(input_file):
 
 if __name__ == '__main__':
     Config.setup_logging()
-    run('./Assets/test_inp.txt')
+    # run('./Assets/test_inp.txt')
+    run('./Assets/exo_test_inp.txt')
     # run('./Assets/hypatia_norm_16_01_10.txt')
