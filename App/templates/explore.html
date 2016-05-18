@@ -78,8 +78,10 @@
                     <fieldset>
                         <legend>Star's Abundance Info</legend>
                         <label class="checkbox-inline">
-                            <input type="checkbox" data-toggle="tooltip" data-placement="top"
-                                   title="Show elements for each star" data-trigger="hover"> Show elements</label>
+                            <input type="checkbox" data-toggle="tooltip" data-placement="top" data-trigger="hover"
+                                   ng-click="toggleElements()" ng-model="showElements"
+                                   title="Show elements for each star"> Show
+                            elements</label>
                     </fieldset>
                 </div>
             </div>
@@ -98,25 +100,32 @@
                     <tr ng-repeat-start="(hip, star) in stars">
                         <td ng-repeat="c in columns">{{ star[c] }}</td>
                     </tr>
-                    <tr ng-repeat-end ng-if="star['planets']">
+                    <tr ng-repeat-end ng-if="star['planets'] || (star['elements'] && showElements)">
                         <td colspan="{{ columns.length }}" style="border:none; position: relative;">
                             <div class="row">
-                                <!--<div class="position-me">
-                                    <div class="rotate-me">
-                                        <p>PLANETS</p>
-                                    </div>
-                                </div>-->
-                                <div class="col-xs-6 col-md-3" ng-repeat="p in star['planets']">
-                                    <div class="media">
-                                        <div class="media-body">
-                                            <h4 class="media-heading">[{{ p['name'] }}]</h4>
-                                            <ul class="list-unstyled">
-                                                <li><strong>p: </strong>{{ p['p'] }}</li>
-                                                <li><strong>e: </strong>{{ p['e'] }}</li>
-                                                <li><strong>a: </strong>{{ p['a'] }}</li>
-                                                <li><strong>m_p: </strong>{{ p['m_p'] }}</li>
-                                            </ul>
+                                <div class="col-md-4" style="max-height: 115px; overflow-y: scroll">
+                                    <!--<div class="position-me">
+                                        <div class="rotate-me">
+                                            <p>PLANETS</p>
                                         </div>
+                                    </div>-->
+                                    <div class="col-md-6" ng-repeat="p in star['planets']">
+                                        <h4 class="media-heading">[{{ p['name'] }}]</h4>
+                                        <ul class="list-unstyled">
+                                            <li><strong>p: </strong>{{ p['p'] }}</li>
+                                            <li><strong>e: </strong>{{ p['e'] }}</li>
+                                            <li><strong>a: </strong>{{ p['a'] }}</li>
+                                            <li><strong>m_p: </strong>{{ p['m_p'] }}</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-7" style="max-height: 115px; overflow-y: scroll"
+                                     ng-show="showElements">
+                                    <div class="col-xs-6 col-md-3" ng-repeat="p in star['elements']">
+                                        <h5 class="media-heading">{{ p['element'] }}
+                                            <small>{{ p['catalogue'] }}</small>
+                                        </h5>
+                                        <p>{{ p['value'] }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -163,6 +172,8 @@
                 $scope.columns = ['hip', 'hd', 'hr', 'spec', 'vmag', 'bv', 'dist', 'rascension', 'declination',
                     'position', 'disk', 'uvw', 'teff', 'logg', 'mass', 'vsini']; // 'multiple_planets'
                 $scope.stars = {};
+                $scope.noPlanets = false; // flag to indicate whether to retrieve planet info
+                $scope.showElements = false;
                 // TODO: Update URL to make it sharable
                 // $location.search({"search": "hip>100"});
 
@@ -176,7 +187,10 @@
                         angular.extend($scope.stars, data['stars']);
                         setAlertMsg(data, $scope, 'success');
                         updateChart();
-                        fetchPlanets();
+                        if ($scope.showElements)
+                            fetchElements();
+                        if (!$scope.noPlanets)
+                            fetchPlanets();
                         deferred.resolve();
                     }, function (err) {
                         setAlertMsg(err, $scope, 'danger');
@@ -265,19 +279,43 @@
                     });
                 }
 
+                function fetchElements() {
+                    let hips = Object.keys($scope.stars);
+                    StarService.elements(hips).then(function (data) {
+                        /**
+                         * Sample data:
+                         * {
+                         *      hip1: [{elem1_obj}, {elem2_obj}, {elem3_obj},...]
+                         *      hip2: [{elem1_obj}, {elem2_obj}, {elem3_obj},...]
+                         * }
+                         */
+                        for (let hip in data['elements']) {
+                            $scope.stars[hip]['elements'] = data['elements'][hip];
+                        }
+                    });
+                }
+
                 // Filters
                 $scope.onlyPlanets = function () {
+                    $scope.noPlanets = false;
                     $scope.filterText = 'multiple_planets > 0';
                     invokeFilters();
                 };
                 $scope.exceptPlanets = function () {
+                    $scope.noPlanets = true;
                     $scope.filterText = 'multiple_planets = 0';
                     invokeFilters();
                 };
                 $scope.regardlessOfPlanets = function () {
+                    $scope.noPlanets = false;
                     $scope.filterText = '';
                     invokeFilters();
                 };
+                $scope.toggleElements = function () {
+                    if ($scope.showElements) {
+                        fetchElements();
+                    }
+                }
                 function invokeFilters() {
                     pageNumber = 0; // reset page
                     $scope.stars = {}; // clear stars to make way for new set
@@ -387,6 +425,15 @@
                     "stars": function (pageNumber, pageSize, query=null) {
                         let deferred = $q.defer();
                         $http.get(`/stars/${pageNumber}/${pageSize}`, {params: {'query': query}}).success(function (data) {
+                            deferred.resolve(data);
+                        }).error(function (err) {
+                            deferred.reject(err);
+                        });
+                        return deferred.promise;
+                    },
+                    "elements": function (stars=[]) {
+                        let deferred = $q.defer();
+                        $http.post('/elements/', {stars: stars}).success(function (data) {
                             deferred.resolve(data);
                         }).error(function (err) {
                             deferred.reject(err);

@@ -167,12 +167,42 @@ def planets():
     """
     stars = map(lambda s: s.strip(), request.json['stars'])
     query = "SELECT `name`, hip, m_p, p, e, a FROM planet WHERE hip IN (%s);"
-    in_str = ','.join(['%s'] * len(stars))
-    db_res = MySQL.execute(DATABASE, query % in_str, stars)
+    resp = tuples_as_dict(query, stars, 1)
+    return jsonify({'planets': resp, "status": {"message": "Fetched %s planets" % len(resp)}})
+
+
+@app.route('/elements/', methods=['POST'])
+def elements():
+    """
+    Retrieves elements for the given hips
+    POST BODY
+    {
+        stars: [required] comma separated list of hips
+    }
+    :return: elements: {hip1: [{elem_prop1: value1, ...}]}
+    """
+    stars = map(lambda s: s.strip(), request.json['stars'])
+    query = """SELECT c.hip, author_year as catalogue, element, `value`
+                FROM composition c INNER JOIN catalogue ca ON c.cid = ca.id
+                WHERE c.hip IN (%s);"""
+    resp = tuples_as_dict(query, stars, 0)
+    return jsonify({'elements': resp, "status": {"message": "Fetched %s elements" % len(resp)}})
+
+
+def tuples_as_dict(query, entities, key_col):
+    """
+    Fetches the tuples and converts to a dictionary based on the key column from the result
+    :param query: query as string
+    :param entities: input entities. Eg: hips
+    :param key_col: index of the key column in the returned tuples
+    :return: a dictionary with array of values for each key col
+    """
+    in_str = ','.join(['%s'] * len(entities))
+    db_res = MySQL.execute(DATABASE, query % in_str, entities)
     resp = {}
     for r in db_res['rows']:
-        upsert(resp, r[1], dict(zip(db_res['columns'], r)))
-    return jsonify({'planets': resp, "status": {"message": "Fetched %s planets" % (len(resp),)}})
+        upsert(resp, r[key_col], dict(zip(db_res['columns'], r)))
+    return resp
 
 
 @app.route('/catalog/<ids>')
