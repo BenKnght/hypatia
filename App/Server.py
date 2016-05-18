@@ -15,6 +15,7 @@ import Config
 from Config import logger
 from Utils.utils import median
 from Utils.utils import upsert_dict_arr
+from Utils.utils import upsert
 
 app = Flask(__name__)
 
@@ -94,8 +95,9 @@ def stars(page, limit):
         # TODO: Possible SQL injection due to WHERE clause
         query = "SELECT * FROM star WHERE {} LIMIT %s OFFSET %s".format(request.args.get("query") or "1 = 1")
         db_res = MySQL.execute(DATABASE, query, [limit, page * limit])
-        resp = [dict(zip(db_res['columns'], [str(t) if type(t) is bytearray else t for t in row])) for row in
-                db_res['rows']]
+        index_of_hip = db_res['columns'].index('hip')
+        resp = {row[index_of_hip]: dict(zip(db_res['columns'], [str(t) if type(t) is bytearray else t for t in row]))
+                for row in db_res['rows']}
         return jsonify({'stars': resp, "status": {"message": "Fetched %s stars" % (len(resp),)}})
     except Exception as err:
         logger.exception(err)
@@ -151,6 +153,26 @@ def composition_scatter():
     except Exception as err:
         logger.exception(err)
         return jsonify({"status": {"message": "Something went wrong"}}), 500
+
+
+@app.route('/planets/', methods=['POST'])
+def planets():
+    """
+    Retrieves planets for the given hips
+    POST BODY
+    {
+        stars: [required] comma separated list of hips
+    }
+    :return: planets: {hip1: [{planet1_prop1: value1, ...}]}
+    """
+    stars = map(lambda s: s.strip(), request.json['stars'])
+    query = "SELECT `name`, hip, m_p, p, e, a FROM planet WHERE hip IN (%s);"
+    in_str = ','.join(['%s'] * len(stars))
+    db_res = MySQL.execute(DATABASE, query % in_str, stars)
+    resp = {}
+    for r in db_res['rows']:
+        upsert(resp, r[1], dict(zip(db_res['columns'], r)))
+    return jsonify({'planets': resp, "status": {"message": "Fetched %s planets" % (len(resp),)}})
 
 
 @app.route('/catalog/<ids>')

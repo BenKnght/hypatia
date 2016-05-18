@@ -78,6 +78,8 @@ class HypatiaExoParser(Parser):
                             comp_cat = re.match(r'(\w+)(.*)\[(.+)\]', raw_attr)
                             if comp_cat:
                                 element, value, author_year = comp_cat.groups()
+                                if re.match(r'blank', element):  # ignore if element is marked as blank#
+                                    continue
                                 catalogue = Catalogue(author_year)
                                 composition = Composition(None, None, element, value)
                                 elements.append((catalogue, composition))
