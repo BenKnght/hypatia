@@ -2,152 +2,154 @@
 {% block title %}Explore & Interact with Data{% endblock %}
 
 {% block head %}
-{{ super() }}
-<link href="/static/bower_components/amcharts/dist/amcharts/plugins/export/export.css" media="all" rel="stylesheet"
-      type="text/css"/>
-<link href="/static/bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css" rel="stylesheet"/>
-<style type="text/css">
-    .popover {
-        max-width: 100%;
-    }
-</style>
+    {{ super() }}
+    <link href="/static/bower_components/amcharts/dist/amcharts/plugins/export/export.css" media="all" rel="stylesheet"
+          type="text/css"/>
+    <link href="/static/bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css" rel="stylesheet"/>
+    <style type="text/css">
+        .popover {
+            max-width: 100%;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-{% raw %}
-<div ng-app="viz">
-    <base href="/"/>
-    <div ng-cloak ng-controller="VisualizationController as v">
+    {% raw %}
+    <div ng-app="viz">
+        <base href="/"/>
+        <div ng-cloak ng-controller="VisualizationController as v">
 
-        <!--TODO: alert doesnt show the message-->
-        <!--<my-alert data-msg="alert_msg" data-type="alert_type"></my-alert>-->
+            <!--TODO: alert doesnt show the message-->
+            <!--<my-alert data-msg="alert_msg" data-type="alert_type"></my-alert>-->
 
-        <form style="margin-bottom: 10px;" ng-submit="filterStars($event)">
-            <input style="width: 83.333333%" type="text" class="form-control col-md-10 col-xs-10 col-sm-10" id="search"
-                   placeholder="Filter criteria" ng-focus="openSuggestions()"
-                   data-toggle="popover" data-placement="top" data-container="body" data-trigger="hover focus"
-                   data-html="true" title="Need help? Readme" ng-model="filterText"
-                   data-content="you can try any of these,<ul><li>hip = '7444'</li><li>dist > 20 and disk = 'thin'</li><li>rascension > 300 or declination < 50</li></ul>">
-            <button type="submit" style="margin-left: 10px;" class="btn btn-primary col-md-1 col-xs-1 col-sm-1">Filter
-            </button>
-            <div class="clearfix"></div>
-        </form>
+            <form style="margin-bottom: 10px;" ng-submit="filterStars($event)">
+                <input style="width: 83.333333%" type="text" class="form-control col-md-10 col-xs-10 col-sm-10"
+                       id="search"
+                       placeholder="Filter criteria" ng-focus="openSuggestions()"
+                       data-toggle="popover" data-placement="top" data-container="body" data-trigger="hover focus"
+                       data-html="true" title="Need help? Readme" ng-model="filterText"
+                       data-content="you can try any of these,<ul><li>hip = '7444'</li><li>dist > 20 and disk = 'thin'</li><li>rascension > 300 or declination < 50</li></ul>">
+                <button type="submit" style="margin-left: 10px;" class="btn btn-primary col-md-1 col-xs-1 col-sm-1">
+                    Filter
+                </button>
+                <div class="clearfix"></div>
+            </form>
 
-        <div class="panel panel-default">
-            <div class="panel-body" id="chart" style="width: 100%; height: 500px;"></div>
-        </div>
+            <div class="panel panel-default">
+                <div class="panel-body" id="chart" style="width: 100%; height: 500px;"></div>
+            </div>
 
-        <div class="table-responsive">
-            <table class="table table-condensed table-bordered table-striped">
-                <thead>
-                <tr>
-                    <th colspan="12">Showing {{stars.length}} stars</th>
-                </tr>
-                <tr>
-                    <th ng-repeat="c in columns">{{c}}</th>
-                </tr>
-                </thead>
-                <tr ng-repeat="star in stars track by star.hip">
-                    <td ng-repeat="c in columns">{{ star[c] }}</td>
-                </tr>
-            </table>
+            <div class="table-responsive">
+                <table class="table table-condensed table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th colspan="12">Showing {{stars.length}} stars</th>
+                    </tr>
+                    <tr>
+                        <th ng-repeat="c in columns">{{c}}</th>
+                    </tr>
+                    </thead>
+                    <tr ng-repeat="star in stars track by star.hip">
+                        <td ng-repeat="c in columns">{{ star[c] }}</td>
+                    </tr>
+                </table>
+            </div>
         </div>
     </div>
-</div>
-{% endraw %}
-<script type="text/javascript" src="/static/bower_components/angular/angular.min.js"></script>
-<script type="text/javascript" src="/static/bower_components/angular-sanitize/angular-sanitize.min.js"></script>
-<script type="text/javascript" src="/static/bower_components/jquery/dist/jquery.min.js"></script>
-<script type="text/javascript" src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-<script type="text/javascript" src="/static/bower_components/amcharts/dist/amcharts/amcharts.js"></script>
-<script type="text/javascript" src="/static/bower_components/amcharts/dist/amcharts/xy.js"></script>
-<script type="text/javascript"
-        src="/static/bower_components/amcharts/dist/amcharts/plugins/export/export.min.js"></script>
+    {% endraw %}
+    <script type="text/javascript" src="/static/bower_components/angular/angular.min.js"></script>
+    <script type="text/javascript" src="/static/bower_components/angular-sanitize/angular-sanitize.min.js"></script>
+    <script type="text/javascript" src="/static/bower_components/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/static/bower_components/amcharts/dist/amcharts/amcharts.js"></script>
+    <script type="text/javascript" src="/static/bower_components/amcharts/dist/amcharts/xy.js"></script>
+    <script type="text/javascript"
+            src="/static/bower_components/amcharts/dist/amcharts/plugins/export/export.min.js"></script>
 
-<script type="text/javascript" src="/static/bower_components/jquery-ui/ui/core.js"></script>
-<script type="text/javascript" src="/static/bower_components/jquery-ui/ui/widget.js"></script>
-<script type="text/javascript" src="/static/bower_components/jquery-ui/ui/position.js"></script>
-<script type="text/javascript" src="/static/bower_components/jquery-ui/ui/menu.js"></script>
-<script type="text/javascript" src="/static/bower_components/jquery-ui/ui/autocomplete.js"></script>
+    <script type="text/javascript" src="/static/bower_components/jquery-ui/ui/core.js"></script>
+    <script type="text/javascript" src="/static/bower_components/jquery-ui/ui/widget.js"></script>
+    <script type="text/javascript" src="/static/bower_components/jquery-ui/ui/position.js"></script>
+    <script type="text/javascript" src="/static/bower_components/jquery-ui/ui/menu.js"></script>
+    <script type="text/javascript" src="/static/bower_components/jquery-ui/ui/autocomplete.js"></script>
 
-<script type="text/javascript" src="/static/js/StateMachine.js"></script>
+    <script type="text/javascript" src="/static/js/StateMachine.js"></script>
 
-<script type="text/javascript">
-    (function (angular, $, AmCharts) {
-        const app = angular.module('viz', ['ngSanitize']).config(['$locationProvider',
-            function ($locationProvider) {
-                $locationProvider.html5Mode(true);
-            }]);
+    <script type="text/javascript">
+        (function (angular, $, AmCharts) {
+            const app = angular.module('viz', ['ngSanitize']).config(['$locationProvider',
+                function ($locationProvider) {
+                    $locationProvider.html5Mode(true);
+                }]);
 
-        function setAlertMsg(data, $scope, type='info') {
-            if (data['status']) {
-                $scope.alert_type = type;
-                $scope.alert_msg = data['status']['message'];
-            }
-        }
-
-        app.controller('VisualizationController', function ($scope, $location, StarService, PlotService, $q) {
-            $scope.columns = ['hip', 'hd', 'hr', 'spec', 'vmag', 'bv', 'dist', 'rascension', 'declination', 'position', 'disk', 'uvw'];
-            $scope.stars = [];
-            // TODO: Update URL to make it sharable
-            // $location.search({"search": "hip>100"});
-
-            let pageNumber = 0, pageSize = 25;
-
-            function fetchStars() {
-                let deferred = $q.defer();
-                StarService.stars(pageNumber, pageSize, $scope.filterText).then(function (data) {
-                    if (data['stars'].length < pageSize)
-                        deferred.reject(); // fetched all stars
-                    // console.log(`Stars ${data['stars'].length}. Page ${pageNumber}`);
-                    let stars = $scope.stars;
-                    $scope.stars = stars.concat(data['stars']);
-                    setAlertMsg(data, $scope, 'success');
-                    updateChart();
-                    deferred.resolve();
-                }, function (err) {
-                    setAlertMsg(err, $scope, 'danger');
-                    deferred.reject();
-                });
-                return deferred.promise;
-            }
-
-            $scope.filterStars = function (e) {
-                e.preventDefault();
-                pageNumber = 0; // reset page
-                $scope.stars = []; // clear stars to make way for new set
-                return fetchStars();
-            };
-            function initPage() {
-                fetchStars().then(function () {
-                    pageNumber++;
-                    // Keep loading more stars until the user's screen is full
-                    if ($(document).height() < $(window).height())
-                        initPage();
-                });
-
-            }
-
-            initPage();
-
-            $(window).scroll(function () {
-                // Pre-fetch the stars before user hits the bottom to get a smooth user experience
-                // 120 is arrived assuming user takes 0.5s to scroll one a screen of 1000px long and
-                // network i/o = 60ms,
-                if ($(window).scrollTop() == $(document).height() - $(window).height()) {
-                    pageNumber++;
-                    fetchStars();
+            function setAlertMsg(data, $scope, type='info') {
+                if (data['status']) {
+                    $scope.alert_type = type;
+                    $scope.alert_msg = data['status']['message'];
                 }
-            });
+            }
 
-            function updateChart() {
-                let hips = $scope.stars.map(function (star) {
-                    return star.hip;
+            app.controller('VisualizationController', function ($scope, $location, StarService, PlotService, $q) {
+                $scope.columns = ['hip', 'hd', 'hr', 'spec', 'vmag', 'bv', 'dist', 'rascension', 'declination', 'position', 'disk', 'uvw'];
+                $scope.stars = [];
+                // TODO: Update URL to make it sharable
+                // $location.search({"search": "hip>100"});
+
+                let pageNumber = 0, pageSize = 25;
+
+                function fetchStars() {
+                    let deferred = $q.defer();
+                    StarService.stars(pageNumber, pageSize, $scope.filterText).then(function (data) {
+                        if (data['stars'].length < pageSize)
+                            deferred.reject(); // fetched all stars
+                        // console.log(`Stars ${data['stars'].length}. Page ${pageNumber}`);
+                        let stars = $scope.stars;
+                        $scope.stars = stars.concat(data['stars']);
+                        setAlertMsg(data, $scope, 'success');
+                        updateChart();
+                        deferred.resolve();
+                    }, function (err) {
+                        setAlertMsg(err, $scope, 'danger');
+                        deferred.reject();
+                    });
+                    return deferred.promise;
+                }
+
+                $scope.filterStars = function (e) {
+                    e.preventDefault();
+                    pageNumber = 0; // reset page
+                    $scope.stars = []; // clear stars to make way for new set
+                    return fetchStars();
+                };
+                function initPage() {
+                    fetchStars().then(function () {
+                        pageNumber++;
+                        // Keep loading more stars until the user's screen is full
+                        if ($(document).height() < $(window).height())
+                            initPage();
+                    });
+
+                }
+
+                initPage();
+
+                $(window).scroll(function () {
+                    // Pre-fetch the stars before user hits the bottom to get a smooth user experience
+                    // 120 is arrived assuming user takes 0.5s to scroll one a screen of 1000px long and
+                    // network i/o = 60ms,
+                    if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+                        pageNumber++;
+                        fetchStars();
+                    }
                 });
-                PlotService.scatter(hips).then(function (data) {
-                    /**
-                     * Sample data:
-                     * stars: {
+
+                function updateChart() {
+                    let hips = $scope.stars.map(function (star) {
+                        return star.hip;
+                    });
+                    PlotService.scatter(hips, ['FeH', 'AlH']).then(function (data) {
+                        /**
+                         * Sample data:
+                         * stars: {
                                     7444: {
                                         AlH: -0.029999999329447746,
                                         CaH: -0.10999999940395355,
@@ -157,49 +159,60 @@
                                         TiH: 0.20999999344348907
                                     },
                                }
-                     */
-                    $scope.chart.dataProvider = [];
-                    for (let star in data['stars']) {
-                        let composition = data['stars'][star];
-                        try {
-                            $scope.chart.dataProvider.push({
-                                x: composition['FeH'],
-                                y: composition['AlH'],
-                                value: `Star: ${star}<br />FeH: ${composition['FeH']}<br />AlH: ${composition['AlH']}`
-                            });
+                         */
+                        $scope.chart.dataProvider = [];
+                        for (let star in data['stars']) {
+                            let composition = data['stars'][star];
+                            try {
+                                $scope.chart.dataProvider.push({
+                                    x: composition['FeH'],
+                                    y: composition['AlH'],
+                                    value: `Star: ${star}<br />FeH: ${composition['FeH']}<br />AlH: ${composition['AlH']}`
+                                });
+                            }
+                            catch (err) {
+                                console.log(`For star, ${star}. Error: ${err}`);
+                            }
                         }
-                        catch (err) {
-                            console.log(`For star, ${star}. Error: ${err}`);
-                        }
-                    }
-                    $scope.chart.validateData();
-                });
-            }
-
-            // Charting
-            $scope.chart = AmCharts.makeChart("chart", {
-                "type": "xy",
-                "autoMargins": true,
-                "autoMarginOffset": 20,
-                "handDrawn": true,
-                "addClassNames": false,
-                "graphs": [
-                    {
-                        "bullet": "diamond",
-                        "bulletSize": 20,
-                        "lineAlpha": 0,
-                        "valueField": "value",
-                        "xField": "x",
-                        "yField": "y"
-                    }
-                ],
-                "dataProvider": [],
-                "export": {
-                    "enabled": true
+                        $scope.chart.validateData();
+                    });
                 }
-            });
 
-            // Filter Textbox
+                // Charting
+                $scope.chart = AmCharts.makeChart("chart", {
+                    "type": "xy",
+                    "autoMargins": true,
+                    "autoMarginOffset": 20,
+                    "handDrawn": true,
+                    "addClassNames": false,
+                    "valueAxes": [{
+                        "position": "bottom",
+                        "axisAlpha": 0,
+                        "dashLength": 1,
+                        "title": "[Fe/H]"
+                    }, {
+                        "axisAlpha": 0,
+                        "dashLength": 1,
+                        "position": "left",
+                        "title": "[Al/H]"
+                    }],
+                    "graphs": [
+                        {
+                            "bullet": "diamond",
+                            "bulletSize": 20,
+                            "lineAlpha": 0,
+                            "valueField": "value",
+                            "xField": "x",
+                            "yField": "y"
+                        }
+                    ],
+                    "dataProvider": [],
+                    "export": {
+                        "enabled": true
+                    }
+                });
+
+                // Filter Textbox
 //            let start = new State($scope.columns);
 //            let filterExpr = new StateMachine(start); // key
 //            filterExpr.next(new State(['>', '<', '=', '<=', '>='])); // operator
@@ -250,51 +263,52 @@
 //            });
 //
 //            $("#search").autocomplete("disable"); // TODO: disabled until entire control is ready
-        });
+            });
 
-        app.directive('myAlert', function () {
-            return {
-                restrict: 'E',
-                scope: {
-                    msg: '=',
-                    type: '='
-                },
-                templateUrl: '/partials/_my-alert.html'
-            }
-        });
-
-        app.factory('StarService', function ($http, $q) {
-            return {
-                "stars": function (pageNumber, pageSize, query=null) {
-                    let deferred = $q.defer();
-                    $http.get(`/stars/${pageNumber}/${pageSize}`, {params: {'query': query}}).success(function (data) {
-                        deferred.resolve(data);
-                    }).error(function (err) {
-                        deferred.reject(err);
-                    });
-                    return deferred.promise;
+            app.directive('myAlert', function () {
+                return {
+                    restrict: 'E',
+                    scope: {
+                        msg: '=',
+                        type: '='
+                    },
+                    templateUrl: '/partials/_my-alert.html'
                 }
-            }
-        });
+            });
 
-        app.factory('PlotService', function ($http, $q) {
-            return {
-                "scatter": function (stars=[]) {
-                    let deferred = $q.defer();
-                    $http.get(`/plots/composition/${stars.join(",")}`).success(function (data) {
-                        deferred.resolve(data);
-                    }).error(function (err) {
-                        deferred.reject(err);
-                    });
-                    return deferred.promise;
+            app.factory('StarService', function ($http, $q) {
+                return {
+                    "stars": function (pageNumber, pageSize, query=null) {
+                        let deferred = $q.defer();
+                        $http.get(`/stars/${pageNumber}/${pageSize}`, {params: {'query': query}}).success(function (data) {
+                            deferred.resolve(data);
+                        }).error(function (err) {
+                            deferred.reject(err);
+                        });
+                        return deferred.promise;
+                    }
                 }
-            }
-        });
+            });
 
-        // JQuery
-        $("#search").popover();
+            app.factory('PlotService', function ($http, $q) {
+                return {
+                    "scatter": function (stars=[], elements=[]) {
+                        let deferred = $q.defer();
+                        let data = {'stars': stars, 'elements': elements};
+                        $http.post(`/plots/composition/`, data).success(function (data) {
+                            deferred.resolve(data);
+                        }).error(function (err) {
+                            deferred.reject(err);
+                        });
+                        return deferred.promise;
+                    }
+                }
+            });
+
+            // JQuery
+            $("#search").popover();
 
 
-    })(window.angular, window.$, window.AmCharts);
-</script>
+        })(window.angular, window.$, window.AmCharts);
+    </script>
 {% endblock %}

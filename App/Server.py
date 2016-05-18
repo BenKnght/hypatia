@@ -4,7 +4,6 @@
 import os
 import time
 import logging
-import re
 from flask import jsonify
 from flask import Flask, request
 from flask import render_template
@@ -14,7 +13,8 @@ import Importer
 from DataSource.MySQLDataSource import MySQL
 import Config
 from Config import logger
-from Utils.utils import upsert_dict
+from Utils.utils import median
+from Utils.utils import upsert_dict_arr
 
 app = Flask(__name__)
 
@@ -102,24 +102,73 @@ def stars(page, limit):
         return jsonify({"status": {"message": "Something went wrong"}}), 500
 
 
-@app.route('/plots/composition/<stars>')
-def composition_scatter(stars):
+@app.route('/plots/composition/', methods=['POST'])
+def composition_scatter():
     """
-    Average composition of each element of the star for all catalogs
-    :param stars: a comma separated string of star hips
-    :return: {hip1: {FeH: 0.5, OH: -0.07, ...}, {hip2: {CO: 0.09, ...}}
+    Median composition of requested elements for the requested star considering common catalogs
+    POST BODY:
+    {
+        stars: [required] comma separated list of hips
+        elements: [required] comma separated list of elements for which compositions are required
+        catalogs: [optional] comma separated list of catalogs to include if provided, else all will be used
+    }
+    :return: {hip1: {FeH: 0.5, OH: -0.07, ...}, {hip2: {FeH: 0.09, ...}}
     """
     try:
-        query = "SELECT hip, element, AVG(value) as value FROM composition WHERE hip IN (%s) GROUP BY hip, element;"
-        in_str = re.sub(r'\s*\d+\s*', '%s', stars)
-        db_res = MySQL.execute(DATABASE, query % (in_str,), map(lambda s: s.strip(), stars.split(",")))
+        stars = map(lambda s: s.strip(), request.json['stars'])
+        elements = map(lambda e: e.strip(), request.json['elements'])
+        catalogs = map(lambda c: c.strip(), request.json.get('catalogs', []))
+        query = """SELECT
+                      t1.hip,
+                      t1.cid,
+                      t1.element,
+                      t1.value
+                    FROM composition t1
+                    INNER JOIN composition t2
+                      ON t1.cid = t2.cid
+                      AND t1.element <> t2.element
+                      AND t1.hip = t2.hip
+                      AND t1.hip IN (%s)
+                      AND t1.element IN (%s)
+                      AND t2.element IN (%s) %s;"""
+        in_str_stars = ','.join(['%s'] * len(stars))
+        in_str_elems = ','.join(['%s'] * len(elements))
+        in_str_cats = ','.join(['%s'] * len(catalogs))
+        catalog_query = 'AND t1.cid IN (%s);' % in_str_cats if len(catalogs) > 0 else ''
+        db_res = MySQL.execute(DATABASE, query % (in_str_stars, in_str_elems, in_str_elems, catalog_query),
+                               stars + elements + elements + catalogs)
+
         resp = {}
+        selected_catalogs = set()
         for row in db_res['rows']:
-            upsert_dict(resp, row[0], row[1], row[2])
-        return jsonify({'stars': resp, "status": {"message": "Fetched %s stars" % (len(resp),)}})
+            upsert_dict_arr(resp, row[0], row[2], row[3])
+            selected_catalogs.add(row[1])
+        for star in resp:
+            for e in resp[star]:
+                resp[star][e] = median(resp[star][e])
+        return jsonify({'stars': resp, 'catalogs': _catalogs_for_ids(selected_catalogs),
+                        "status": {"message": "Fetched %s stars" % len(resp)}})
     except Exception as err:
         logger.exception(err)
         return jsonify({"status": {"message": "Something went wrong"}}), 500
+
+
+@app.route('/catalog/<ids>')
+def catalogs(ids):
+    """
+    Fetch catalogue names for given IDs
+    :param ids: comma separated string of catalog IDs
+    :return: {catalogs: [(id1, catalog_name1), (id2, catalog_name2),...]}
+    """
+    db_res = _catalogs_for_ids([id.strip() for id in ids.split(',')])
+    return jsonify({'catalogs': db_res, "status": {"message": "Fetched %s catalogs" % len(db_res)}})
+
+
+def _catalogs_for_ids(ids):
+    query = "SELECT id, author_year FROM catalogue WHERE id IN (%s);"
+    in_str = ','.join(['%s'] * len(ids))
+    db_res = MySQL.execute(DATABASE, query % in_str, ids)['rows']
+    return db_res
 
 
 @app.route('/star/<hip>/elements')
