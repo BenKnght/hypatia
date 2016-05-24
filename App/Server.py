@@ -112,7 +112,7 @@ def composition_scatter():
     {
         stars: [required] comma separated list of hips
         elements: [required] comma separated list of elements for which compositions are required
-        catalogs: [optional] comma separated list of catalogs to include if provided, else all will be used
+        catalogs: [optional] comma separated list of catalogs (author_year column) to exclude if provided, else all will be used
     }
     :return: {hip1: {FeH: 0.5, OH: -0.07, ...}, {hip2: {FeH: 0.09, ...}}
     """
@@ -125,18 +125,18 @@ def composition_scatter():
                       t1.cid,
                       t1.element,
                       t1.value
-                    FROM composition t1
-                    INNER JOIN composition t2
-                      ON t1.cid = t2.cid
+                    FROM composition t1, catalogue c, composition t2
+                      WHERE t1.cid = t2.cid
                       AND t1.element <> t2.element
                       AND t1.hip = t2.hip
                       AND t1.hip IN (%s)
                       AND t1.element IN (%s)
-                      AND t2.element IN (%s) %s;"""
+                      AND t2.element IN (%s)
+                      AND t1.cid = c.id %s;"""
         in_str_stars = ','.join(['%s'] * len(stars))
         in_str_elems = ','.join(['%s'] * len(elements))
         in_str_cats = ','.join(['%s'] * len(catalogs))
-        catalog_query = 'AND t1.cid IN (%s);' % in_str_cats if len(catalogs) > 0 else ''
+        catalog_query = 'AND c.author_year NOT IN (%s)' % in_str_cats if len(catalogs) > 0 else ''
         db_res = MySQL.execute(DATABASE, query % (in_str_stars, in_str_elems, in_str_elems, catalog_query),
                                stars + elements + elements + catalogs)
 

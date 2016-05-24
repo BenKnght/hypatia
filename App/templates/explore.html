@@ -61,10 +61,10 @@
             </div>
 
             <div id="controls" class="row" style="margin-bottom: 15px;">
-                <div class="col-md-5">
+                <div class="col-md-4">
                     <fieldset>
                         <legend>Planet Info</legend>
-                        <label class="radio-inline col-md-4">
+                        <label class="radio-inline col-md-3">
                             <input type="radio" name="planetRadios" data-toggle="tooltip" data-trigger="hover"
                                    data-placement="top" title="Only show stars which have planets"
                                    ng-click="onlyPlanets()"> Have planets</label>
@@ -72,13 +72,13 @@
                             <input type="radio" name="planetRadios" data-toggle="tooltip" data-placement="top"
                                    title="Only show stars which do not have planets" data-trigger="hover"
                                    ng-click="exceptPlanets()"> Do not have planets</label>
-                        <label class="radio-inline col-md-2">
+                        <label class="radio-inline col-md-3">
                             <input type="radio" name="planetRadios" data-toggle="tooltip" data-placement="top"
                                    title="Show stars regardless whether they have planets or not" data-trigger="hover"
                                    ng-click="regardlessOfPlanets()" checked> Show all</label>
                     </fieldset>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <fieldset>
                         <legend>Star's Abundance Info</legend>
                         <label class="checkbox-inline">
@@ -88,20 +88,27 @@
                             elements</label>
                     </fieldset>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <fieldset>
                         <legend>Chart Controls</legend>
                         <form class="form-inline">
-                            <div class="form-group">
+                            <div class="form-group" style="margin-right: 15px; vertical-align: top;">
                                 <label for="xaxis">X-Axis</label>
                                 <select id="xaxis" ng-model="xaxis" class="form-control" ng-change="updateChart()">
                                     <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
                                 </select>
                             </div>
-                            <div class="form-group col-md-offset-1">
+                            <div class="form-group" style="vertical-align: top;">
                                 <label for="yaxis">Y-Axis</label>
                                 <select id="yaxis" ng-model="yaxis" class="form-control" ng-change="updateChart()">
                                     <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-offset-1">
+                                <label for="excat" style="vertical-align: top">Exclude Catalogs</label>
+                                <select id="excat" multiple class="form-control" ng-change="updateChart()"
+                                        ng-model="excluded_cat">
+                                    <option ng-repeat="c in catalogs" value="{{c}}">{{c}}</option>
                                 </select>
                             </div>
 
@@ -253,6 +260,7 @@
                     'PbH': 'Pb/H',
                     'BaH': 'Ba/H'
                 };
+                $scope.catalogs = ["Adamow et al. (2014)", "Adibekyan et al. (2012)", "Adibekyan et al. (2015)", "Allen & Porto de Mello (2011)", "Allende Prieto et al. (2004)", "Battistini et al. 2015", "Bensby et al. (2005)", "Bensby et al. 2014", "Bergemann et al. (2010)", "Bertran de Lis et al. (2015)", "Biazzo et al. (2012)", "Bodaghee et al. (2003)", "Boesgaard et al. (2011)", "Bond et al. (2006, 2008)", "Brewer & Carney (2006)", "Brugamyer et al. (2011)", "Bruntt et al. (2012)", "Caffau et al. (2011)", "Carretta et al. (2000)", "Castro et al. (1997)", "Castro et al. (1999)", "Chen et al. (2000)", "D'Orazi et al. (2012)", "da Silva et al. (2012)", "Delgado Mena et al. (2010)", "Ecuvillon et al. (2004)", "Ecuvillon et al. (2006)", "Edvardsson et al. (1993)", "Feltzing & Gustafsson (1998)", "Feltzing et al. (2007)", "Francois (1986)", "Francois (1988)", "Fulbright (2000)", "Galeev et al. (2004)", "Gebran et al. (2010)", "Gehren et al. (2004)", "Gehren et al. (2006)", "Gilli et al. (2006)", "Gonzalez & Laws (2007)", "Gonzalez et al. (2001)", "Gonzalez Hernandez et al. (2010)", "Gonzalez Hernandez et al. (2013)", "Gratton et al. (2000)", "Gratton et al. (2003)", "Gustafsson et al. (1999)", "Huang et al. (2005)", "Ishigaki et al. (2012)", "Ishigaki et al. (2013)", "Jofre et al. (2015)", "Jonsell et al. (2005)", "Kang et al. (2011)", "Karinkuzhi et al. (2014)", "Koch & Edvardsson (2002)", "Korotin et al. (2011)", "Laird (1985)", "Liu et al. (2012)", "Luck & Heiter (2005)", "Maldonado et al. (2013)", "Mann et al. 2013", "Mashonkina et al. (2006)", "Mashonkina et al. (2007)", "Mishenina et al. (2003)", "Mishenina et al. (2004)", "Mishenina et al. (2008)", "Mishenina et al. (2011)", "Mishenina et al. (2013)", "Mishenina et al. (2015)", "Mortier et al. (2013)", "Neuforge-Verheecke & Magain (1997)", "Neves et al. (2009)", "Nissen & Schuster (1997)", "Nissen & Schuster (2010)", "Nissen et al. (2011)", "Nissen et al. (2014)", "Nissen et al. (2015)", "Peterson et al. (2013)", "Petigura & Marcy (2011)", "Porto de Mello et al. (2008)", "Ramirez et al. (2007)", "Ramirez et al. (2009)", "Ramirez et al. (2012)", "Ramirez et al. (2014a)", "Ramirez et al. (2014b)", "Recio Blanco et al. (2012)", "Reddy et al. (2003)", "Reddy et al. (2006)", "Sadakane et al. (2002)", "Schuler et al. (2011)", "Shi et al. (2004)", "Shi et al. (2012)", "Sitnova et al. (2015)", "Stonkute et al. (2012)", "Stonkute et al. (2013)", "Takeda (2007), Takeda & Honda (2005)", "Takeda et al. (2005)", "Thevenin (1998)", "Trevisan et al. (2011)", "Valenti & Fischer (2005)", "Wang et al. (2011)", "Wu et al. (2015)", "Yan et al. (2015)", "Zenovience et al. (2014)", "Zhang & Zhao (2006)", "Zhao et al. (2002)"];
                 $scope.stars = {};
                 $scope.noPlanets = false; // flag to indicate whether to retrieve planet info
                 $scope.showElements = false;
@@ -315,7 +323,7 @@
 
                 $scope.updateChart = function () {
                     let hips = Object.keys($scope.stars);
-                    PlotService.scatter(hips, [$scope.xaxis, $scope.yaxis]).then(function (data) {
+                    PlotService.scatter(hips, [$scope.xaxis, $scope.yaxis], $scope.excluded_cat).then(function (data) {
                         /**
                          * Sample data:
                          * stars: {
@@ -441,8 +449,7 @@
                     "export": {
                         "enabled": true
                     }
-                })
-                ;
+                });
 
                 // Filter Textbox
 //            let start = new State($scope.columns);
@@ -547,9 +554,9 @@
 
             app.factory('PlotService', function ($http, $q) {
                 return {
-                    "scatter": function (stars=[], elements=[]) {
+                    "scatter": function (stars=[], elements=[], catalogs=[]) {
                         let deferred = $q.defer();
-                        let data = {'stars': stars, 'elements': elements};
+                        let data = {'stars': stars, 'elements': elements, 'catalogs': catalogs};
                         $http.post(`/plots/composition/`, data).success(function (data) {
                             deferred.resolve(data);
                         }).error(function (err) {
