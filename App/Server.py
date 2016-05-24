@@ -148,8 +148,7 @@ def composition_scatter():
         for star in resp:
             for e in resp[star]:
                 resp[star][e] = median(resp[star][e])
-        return jsonify({'stars': resp, 'catalogs': _catalogs_for_ids(selected_catalogs),
-                        "status": {"message": "Fetched %s stars" % len(resp)}})
+        return jsonify({'stars': resp, "status": {"message": "Fetched %s stars" % len(resp)}})
     except Exception as err:
         logger.exception(err)
         return jsonify({"status": {"message": "Something went wrong"}}), 500
