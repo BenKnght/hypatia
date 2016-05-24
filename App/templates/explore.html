@@ -27,6 +27,10 @@
             transform-origin: right top;
             text-align: center;
         }
+
+        form {
+            margin-bottom: 10px;
+        }
     </style>
 {% endblock %}
 
@@ -39,7 +43,7 @@
             <!--TODO: alert doesnt show the message-->
             <!--<my-alert data-msg="alert_msg" data-type="alert_type"></my-alert>-->
 
-            <form style="margin-bottom: 10px;" ng-submit="filterStars($event)">
+            <form ng-submit="filterStars($event)">
                 <input style="width: 83.333333%" type="text" class="form-control col-md-10 col-xs-10 col-sm-10"
                        id="search"
                        placeholder="Filter criteria" ng-focus="openSuggestions()"
@@ -57,24 +61,24 @@
             </div>
 
             <div id="controls" class="row" style="margin-bottom: 15px;">
-                <div class="col-md-6">
+                <div class="col-md-5">
                     <fieldset>
                         <legend>Planet Info</legend>
-                        <label class="radio-inline col-md-3">
+                        <label class="radio-inline col-md-4">
                             <input type="radio" name="planetRadios" data-toggle="tooltip" data-trigger="hover"
                                    data-placement="top" title="Only show stars which have planets"
                                    ng-click="onlyPlanets()"> Have planets</label>
-                        <label class="radio-inline col-md-3">
+                        <label class="radio-inline col-md-4">
                             <input type="radio" name="planetRadios" data-toggle="tooltip" data-placement="top"
                                    title="Only show stars which do not have planets" data-trigger="hover"
                                    ng-click="exceptPlanets()"> Do not have planets</label>
-                        <label class="radio-inline col-md-3">
+                        <label class="radio-inline col-md-2">
                             <input type="radio" name="planetRadios" data-toggle="tooltip" data-placement="top"
                                    title="Show stars regardless whether they have planets or not" data-trigger="hover"
                                    ng-click="regardlessOfPlanets()" checked> Show all</label>
                     </fieldset>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-3">
                     <fieldset>
                         <legend>Star's Abundance Info</legend>
                         <label class="checkbox-inline">
@@ -82,6 +86,27 @@
                                    ng-click="toggleElements()" ng-model="showElements"
                                    title="Show elements for each star"> Show
                             elements</label>
+                    </fieldset>
+                </div>
+                <div class="col-md-4">
+                    <fieldset>
+                        <legend>Chart Controls</legend>
+                        <form class="form-inline">
+                            <div class="form-group">
+                                <label for="xaxis">X-Axis</label>
+                                <select id="xaxis" ng-model="xaxis" class="form-control" ng-change="updateChart()">
+                                    <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-offset-1">
+                                <label for="yaxis">Y-Axis</label>
+                                <select id="yaxis" ng-model="yaxis" class="form-control" ng-change="updateChart()">
+                                    <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
+                                </select>
+                            </div>
+
+                            <div class="clearfix"></div>
+                        </form>
                     </fieldset>
                 </div>
             </div>
@@ -171,9 +196,68 @@
 
                 $scope.columns = ['hip', 'hd', 'hr', 'spec', 'vmag', 'bv', 'dist', 'rascension', 'declination',
                     'position', 'disk', 'uvw', 'teff', 'logg', 'mass', 'vsini']; // 'multiple_planets'
+                $scope.elements = {
+                    'YH': 'Y/H',
+                    'NiH': 'Ni/H',
+                    'KH': 'K/H',
+                    'LaH': 'La/H',
+                    'MgH': 'Mg/H',
+                    'RuH': 'Ru/H',
+                    'CeH': 'Ce/H',
+                    'CaIIH': 'CaII/H',
+                    'DyH': 'Dy/H',
+                    'MoH': 'Mo/H',
+                    'LaIIH': 'LaII/H',
+                    'NH': 'N/H',
+                    'EuH': 'Eu/H',
+                    'NaH': 'Na/H',
+                    'CeIIH': 'CeII/H',
+                    'LiH': 'Li/H',
+                    'NdIIH': 'NdII/H',
+                    'FeH': 'Fe/H',
+                    'SH': 'S/H',
+                    'TiH': 'Ti/H',
+                    'SmH': 'Sm/H',
+                    'EuIIH': 'EuII/H',
+                    'BaIIH': 'BaII/H',
+                    'SiH': 'Si/H',
+                    'ZrH': 'Zr/H',
+                    'CH': 'C/H',
+                    'ScH': 'Sc/H',
+                    'AlH': 'Al/H',
+                    'YIIH': 'YII/H',
+                    'VH': 'V/H',
+                    'PdH': 'Pd/H',
+                    'TiIIH': 'TiII/H',
+                    'PrH': 'Pr/H',
+                    'MnH': 'Mn/H',
+                    'GdH': 'Gd/H',
+                    'ScIIH': 'ScII/H',
+                    'SmIIH': 'SmII/H',
+                    'PH': 'P/H',
+                    'SrIIH': 'SrII/H',
+                    'AgH': 'Ag/H',
+                    'NdH': 'Nd/H',
+                    'BeH': 'Be/H',
+                    'OH': 'O/H',
+                    'SrH': 'Sr/H',
+                    'ZnH': 'Zn/H',
+                    'CrIIH': 'CrII/H',
+                    'HfH': 'Hf/H',
+                    'CaH': 'Ca/H',
+                    'VIIH': 'VII/H',
+                    'ZrIIH': 'ZrII/H',
+                    'CoH': 'Co/H',
+                    'CrH': 'Cr/H',
+                    'CuH': 'Cu/H',
+                    'PbH': 'Pb/H',
+                    'BaH': 'Ba/H'
+                };
                 $scope.stars = {};
                 $scope.noPlanets = false; // flag to indicate whether to retrieve planet info
                 $scope.showElements = false;
+                $scope.xaxis = 'FeH';
+                $scope.yaxis = 'AlH';
                 // TODO: Update URL to make it sharable
                 // $location.search({"search": "hip>100"});
 
@@ -186,7 +270,7 @@
                             deferred.reject(); // fetched all stars
                         angular.extend($scope.stars, data['stars']);
                         setAlertMsg(data, $scope, 'success');
-                        updateChart();
+                        $scope.updateChart();
                         if ($scope.showElements)
                             fetchElements();
                         if (!$scope.noPlanets)
@@ -229,9 +313,9 @@
                     }
                 });
 
-                function updateChart() {
+                $scope.updateChart = function () {
                     let hips = Object.keys($scope.stars);
-                    PlotService.scatter(hips, ['FeH', 'AlH']).then(function (data) {
+                    PlotService.scatter(hips, [$scope.xaxis, $scope.yaxis]).then(function (data) {
                         /**
                          * Sample data:
                          * stars: {
@@ -246,22 +330,27 @@
                                }
                          */
                         $scope.chart.dataProvider = [];
+                        let xlabel = `[${$scope.elements[$scope.xaxis]}]`;
+                        let ylabel = `[${$scope.elements[$scope.yaxis]}]`;
                         for (let star in data['stars']) {
                             let composition = data['stars'][star];
                             try {
                                 $scope.chart.dataProvider.push({
-                                    x: composition['FeH'],
-                                    y: composition['AlH'],
-                                    value: `Star: ${star}<br />FeH: ${composition['FeH']}<br />AlH: ${composition['AlH']}`
+                                    x: composition[$scope.xaxis],
+                                    y: composition[$scope.yaxis],
+                                    value: `Star: ${star}<br />${xlabel}: ${composition[$scope.xaxis]}<br />${ylabel}: ${composition[$scope.yaxis]}`
                                 });
                             }
                             catch (err) {
                                 console.log(`For star, ${star}. Error: ${err}`);
                             }
                         }
+
+                        $scope.chart.valueAxes[0].title = xlabel;
+                        $scope.chart.valueAxes[1].title = ylabel;
                         $scope.chart.validateData();
                     });
-                }
+                };
 
                 function fetchPlanets() {
                     let hips = Object.keys($scope.stars);
@@ -315,7 +404,7 @@
                     if ($scope.showElements) {
                         fetchElements();
                     }
-                }
+                };
                 function invokeFilters() {
                     pageNumber = 0; // reset page
                     $scope.stars = {}; // clear stars to make way for new set
@@ -329,17 +418,6 @@
                     "autoMarginOffset": 20,
                     "handDrawn": true,
                     "addClassNames": false,
-                    "valueAxes": [{
-                        "position": "bottom",
-                        "axisAlpha": 0,
-                        "dashLength": 1,
-                        "title": "[Fe/H]"
-                    }, {
-                        "axisAlpha": 0,
-                        "dashLength": 1,
-                        "position": "left",
-                        "title": "[Al/H]"
-                    }],
                     "graphs": [
                         {
                             "bullet": "diamond",
@@ -350,11 +428,21 @@
                             "yField": "y"
                         }
                     ],
+                    'valueAxes': [{
+                        "position": "bottom",
+                        "axisAlpha": 0,
+                        "dashLength": 1
+                    }, {
+                        "axisAlpha": 0,
+                        "dashLength": 1,
+                        "position": "left"
+                    }],
                     "dataProvider": [],
                     "export": {
                         "enabled": true
                     }
-                });
+                })
+                ;
 
                 // Filter Textbox
 //            let start = new State($scope.columns);
