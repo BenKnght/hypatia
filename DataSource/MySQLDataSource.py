@@ -1,9 +1,7 @@
 import mysql.connector
-from mysql.connector import errorcode
 import os
 
 from DataSource import DataSource
-from Config import logger
 
 
 class MySQL(DataSource):

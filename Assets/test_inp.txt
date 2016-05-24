@@ -1,9 +1,6 @@
 Star: hip = 77783
 hd = 142245
-Star: hip = 77783
-hd = 142245
 bd = B+15 2925
-dist (pc) = 109.529
 dist (pc) = 109.529
 RA = 238.235
 Dec = 15.431
@@ -11,14 +8,14 @@ Position = [-91.086, 52.929, 29.975]
 UVW = (-1.00, -24.40, 19.80)
 Disk component: thin
 Spec Type = K0
-Vmag = 999.0
+Vmag = 7.6302
 B-V = 1.036
-FeH 7.58 [Adamow et al. (2014)]
-OH 8.85 [Adamow et al. (2014)]
-MgH 7.65 [Adamow et al. (2014)]
-AlH 6.52 [Adamow et al. (2014)]
-CaH 6.44 [Adamow et al. (2014)]
-TiH 5.12 [Adamow et al. (2014)]
+FeH 0.12 [Adamow et al. (2014)]
+OH 0.12 [Adamow et al. (2014)]
+MgH 0.11 [Adamow et al. (2014)]
+AlH 0.06 [Adamow et al. (2014)]
+CaH 0.13 [Adamow et al. (2014)]
+TiH 0.19 [Adamow et al. (2014)]
 
 Star: hip = 7444
 hd = 9712
@@ -27,14 +24,14 @@ dist (pc) = 120.048
 RA = 23.969
 Dec = 41.076
 Position = [-46.171, 107.209, -28.036]
-UVW = (9999.00, 9999.00, 9999.00)
+UVW = (-105.00, -3.00, -10.00)
 Disk component: thin
 Spec Type = K1III
 Vmag = 6.5534
 B-V = 1.122
-FeH 7.29 [Adamow et al. (2014)]
-OH 8.8 [Adamow et al. (2014)]
-MgH 7.64 [Adamow et al. (2014)]
-AlH 6.43 [Adamow et al. (2014)]
-CaH 6.2 [Adamow et al. (2014)]
-TiH 5.14 [Adamow et al. (2014)]
+FeH -0.17 [Adamow et al. (2014)]
+OH 0.07 [Adamow et al. (2014)]
+MgH 0.1 [Adamow et al. (2014)]
+AlH -0.03 [Adamow et al. (2014)]
+CaH -0.11 [Adamow et al. (2014)]
+TiH 0.21 [Adamow et al. (2014)]
