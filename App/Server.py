@@ -13,7 +13,7 @@ import Importer
 from DataSource.MySQLDataSource import MySQL
 import Config
 from Config import logger
-from Utils.utils import median
+from Utils.utils import median, mean
 from Utils.utils import upsert_dict_arr
 from Utils.utils import upsert
 
@@ -116,7 +116,7 @@ def composition_scatter():
         elements: [required] comma separated list of elements for which compositions are required
         catalogs: [optional] comma separated list of catalogs (author_year column) to exclude if provided, else all will be used
     }
-    :return: {hip1: {FeH: 0.5, OH: -0.07, ...}, {hip2: {FeH: 0.09, ...}}
+    :return: {hip1: {FeH: {mdn: 0.5, avg: 0.56}, OH: {mdn: -0.07, avg: 0}, ...}, {hip2: {FeH: {mdn: 0.09, avg: 0.1}, ...}}
     """
     try:
         solarnorm = request.json['normalization']
@@ -149,7 +149,7 @@ def composition_scatter():
             upsert_dict_arr(resp, row[0], row[2], row[3])
         for star in resp:
             for e in resp[star]:
-                resp[star][e] = median(resp[star][e])
+                resp[star][e] = {'mdn': median(resp[star][e]), 'avg': mean(resp[star][e])}
         return jsonify({'stars': resp, "status": {"message": "Fetched %s stars" % len(resp)}})
     except Exception as err:
         logger.exception(err)

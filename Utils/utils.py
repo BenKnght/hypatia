@@ -60,3 +60,12 @@ def median(arr):
     if length % 2 == 0:
         return (arr[length / 2] + arr[(length / 2) - 1]) / 2
     return arr[length / 2]
+
+
+def mean(arr):
+    """
+    Computes the mean of an array of numbers
+    :param arr: list of numbers
+    :return: mean
+    """
+    return sum(arr) / len(arr)

@@ -31,6 +31,10 @@
         form {
             margin-bottom: 10px;
         }
+
+        .radio {
+            margin-top: 0;
+        }
     </style>
 {% endblock %}
 
@@ -73,21 +77,28 @@
             </div>
 
             <div id="controls" class="row" style="margin-bottom: 15px;">
-                <div class="col-md-4">
+                <div class="col-md-2">
                     <fieldset>
                         <legend>Planet Info</legend>
-                        <label class="radio-inline col-md-3">
-                            <input type="radio" name="planetRadios" data-toggle="tooltip" data-trigger="hover"
-                                   data-placement="top" title="Only show stars which have planets"
-                                   ng-click="onlyPlanets()"> Have planets</label>
-                        <label class="radio-inline col-md-4">
-                            <input type="radio" name="planetRadios" data-toggle="tooltip" data-placement="top"
-                                   title="Only show stars which do not have planets" data-trigger="hover"
-                                   ng-click="exceptPlanets()"> Do not have planets</label>
-                        <label class="radio-inline col-md-3">
-                            <input type="radio" name="planetRadios" data-toggle="tooltip" data-placement="top"
-                                   title="Show stars regardless whether they have planets or not" data-trigger="hover"
-                                   ng-click="regardlessOfPlanets()" checked> Show all</label>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="planetRadios" data-toggle="tooltip" data-trigger="hover"
+                                       data-placement="top" title="Only show stars which have planets"
+                                       ng-click="onlyPlanets()"> Have planets</label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="planetRadios" data-toggle="tooltip" data-placement="top"
+                                       title="Only show stars which do not have planets" data-trigger="hover"
+                                       ng-click="exceptPlanets()"> Do not have planets</label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="planetRadios" data-toggle="tooltip" data-placement="top"
+                                       title="Show stars regardless whether they have planets or not"
+                                       data-trigger="hover"
+                                       ng-click="regardlessOfPlanets()" checked> Show all</label>
+                        </div>
                     </fieldset>
                 </div>
                 <div class="col-md-2">
@@ -100,32 +111,56 @@
                             elements</label>
                     </fieldset>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-8">
                     <fieldset>
                         <legend>Chart Controls</legend>
-                        <form class="form-inline">
-                            <div class="form-group" style="margin-right: 15px; vertical-align: top;">
-                                <label for="xaxis">X-Axis</label>
-                                <select id="xaxis" ng-model="xaxis" class="form-control" ng-change="updateChart()">
-                                    <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
-                                </select>
-                            </div>
-                            <div class="form-group" style="vertical-align: top;">
-                                <label for="yaxis">Y-Axis</label>
-                                <select id="yaxis" ng-model="yaxis" class="form-control" ng-change="updateChart()">
-                                    <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
-                                </select>
-                            </div>
-                            <div class="form-group col-md-offset-1">
-                                <label for="excat" style="vertical-align: top">Exclude Catalogs</label>
-                                <select id="excat" multiple class="form-control" ng-change="updateChart()"
-                                        ng-model="excluded_cat">
-                                    <option ng-repeat="c in catalogs" value="{{c}}">{{c}}</option>
-                                </select>
+                        <div class="col-md-4">
+                            <div class="form-inline">
+                                <div class="form-group">
+                                    <label for="xaxis">X-Axis</label>
+                                    <select id="xaxis" ng-model="xaxis" class="form-control"
+                                            ng-change="updateChart()">
+                                        <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
+                                    </select>
+                                </div>
                             </div>
 
-                            <div class="clearfix"></div>
-                        </form>
+                            <div class="form-inline" style="margin-top: 10px;">
+                                <div class="form-group">
+                                    <label for="yaxis">Y-Axis</label>
+                                    <select id="yaxis" ng-model="yaxis" class="form-control"
+                                            ng-change="updateChart()">
+                                        <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label>Aggregation type</label>
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="aggRadios" data-toggle="tooltip"
+                                           data-trigger="hover"
+                                           data-placement="top" title="Use Median Aggregation" ng-model="agg"
+                                           ng-click="renderChart()" value="median"> Median</label>
+                            </div>
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="aggRadios" data-toggle="tooltip"
+                                           data-placement="top"
+                                           title="Use Mean Aggregation" data-trigger="hover" ng-model="agg"
+                                           ng-click="renderChart()" value="mean"> Mean</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="excat" style="vertical-align: top">Exclude Catalogs</label>
+                            <select id="excat" multiple class="form-control" ng-change="updateChart()"
+                                    ng-model="excluded_cat">
+                                <option ng-repeat="c in catalogs" value="{{c}}">{{c}}</option>
+                            </select>
+                        </div>
                     </fieldset>
                 </div>
             </div>
@@ -279,10 +314,13 @@
                 $scope.xaxis = 'FeH';
                 $scope.yaxis = 'AlH';
                 $scope.solarnorm = 'Lodders et al. (2009)';
+                $scope.agg = 'median';
+
                 // TODO: Update URL to make it sharable
                 // $location.search({"search": "hip>100"});
 
                 let pageNumber = 0, pageSize = 25;
+                let starComposition = null;
 
                 function fetchStars() {
                     let deferred = $q.defer();
@@ -334,6 +372,34 @@
                     }
                 });
 
+                /**
+                 * Renders chart using the starComposition global variable which is set during AJAX call
+                 */
+                $scope.renderChart = function renderChart() {
+                    let xlabel = `[${$scope.elements[$scope.xaxis]}]`;
+                    let ylabel = `[${$scope.elements[$scope.yaxis]}]`;
+                    $scope.chart.dataProvider = [];
+                    for (let star in starComposition) {
+                        let composition = starComposition[star];
+                        try {
+                            let x = $scope.agg === 'mean' ? composition[$scope.xaxis]['avg'] : composition[$scope.xaxis]['mdn'];
+                            let y = $scope.agg === 'mean' ? composition[$scope.yaxis]['avg'] : composition[$scope.yaxis]['mdn'];
+                            $scope.chart.dataProvider.push({
+                                x: x,
+                                y: y,
+                                value: `Star: ${star}<br />${xlabel}: ${x}<br />${ylabel}: ${y}`
+                            });
+                        }
+                        catch (err) {
+                            console.log(`For star, ${star}. Error: ${err}`);
+                        }
+                    }
+
+                    $scope.chart.valueAxes[0].title = xlabel;
+                    $scope.chart.valueAxes[1].title = ylabel;
+                    $scope.chart.validateData();
+                };
+
                 $scope.updateChart = function () {
                     let hips = Object.keys($scope.stars);
                     PlotService.scatter($scope.solarnorm, hips, [$scope.xaxis, $scope.yaxis], $scope.excluded_cat).then(function (data) {
@@ -341,35 +407,14 @@
                          * Sample data:
                          * stars: {
                                     7444: {
-                                        AlH: -0.029999999329447746,
-                                        CaH: -0.10999999940395355,
-                                        FeH: -0.17000000178813934,
-                                        MgH: 0.10000000149011612,
-                                        OH: 0.07000000029802322,
-                                        TiH: 0.20999999344348907
+                                        AlH: {mdn: -0.029, avg: -0.03},
+                                        CaH: {mdn: 0.01, avg: 0.03},
+                                        FeH: {mdn: -0.5, avg: -0.43}
                                     },
                                }
                          */
-                        $scope.chart.dataProvider = [];
-                        let xlabel = `[${$scope.elements[$scope.xaxis]}]`;
-                        let ylabel = `[${$scope.elements[$scope.yaxis]}]`;
-                        for (let star in data['stars']) {
-                            let composition = data['stars'][star];
-                            try {
-                                $scope.chart.dataProvider.push({
-                                    x: composition[$scope.xaxis],
-                                    y: composition[$scope.yaxis],
-                                    value: `Star: ${star}<br />${xlabel}: ${composition[$scope.xaxis]}<br />${ylabel}: ${composition[$scope.yaxis]}`
-                                });
-                            }
-                            catch (err) {
-                                console.log(`For star, ${star}. Error: ${err}`);
-                            }
-                        }
-
-                        $scope.chart.valueAxes[0].title = xlabel;
-                        $scope.chart.valueAxes[1].title = ylabel;
-                        $scope.chart.validateData();
+                        starComposition = data['stars'];
+                        $scope.renderChart();
                     });
                 };
 
