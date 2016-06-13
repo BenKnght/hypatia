@@ -44,9 +44,21 @@
             <!--<my-alert data-msg="alert_msg" data-type="alert_type"></my-alert>-->
 
             <form ng-submit="filterStars($event)">
+
+                <div class="form-group">
+                    <label for="normalization">Solar Normalization</label>
+                    <select id="normalization" name="normalization" class="form-control" ng-model="solarnorm"
+                            ng-change="updateChart()">
+                        <option value="Lodders et al. (2009)">Lodders et al. (2009)</option>
+                        <option value="Anders & Grevesse (1989)">Anders & Grevesse (1989)</option>
+                        <option value="Anders & Grevesse (1989), Fe = 7.47">Anders & Grevesse (1989), Fe = 7.47</option>
+                        <option value="Grevesse & Sauval (1998)">Grevesse & Sauval (1998)</option>
+                        <option value="Asplund et al. (2009)">Asplund et al. (2009)</option>
+                    </select>
+                </div>
+
                 <input style="width: 83.333333%" type="text" class="form-control col-md-10 col-xs-10 col-sm-10"
-                       id="search"
-                       placeholder="Filter criteria" ng-focus="openSuggestions()"
+                       id="search" placeholder="Filter criteria" ng-focus="openSuggestions()"
                        data-toggle="popover" data-placement="top" data-container="body" data-trigger="hover focus"
                        data-html="true" title="Need help? Readme" ng-model="filterText"
                        data-content="you can try any of these,<ul><li>hip = '7444'</li><li>dist > 20 and disk = 'thin'</li><li>rascension > 300 or declination < 50</li></ul>">
@@ -266,6 +278,7 @@
                 $scope.showElements = false;
                 $scope.xaxis = 'FeH';
                 $scope.yaxis = 'AlH';
+                $scope.solarnorm = 'Lodders et al. (2009)';
                 // TODO: Update URL to make it sharable
                 // $location.search({"search": "hip>100"});
 
@@ -323,7 +336,7 @@
 
                 $scope.updateChart = function () {
                     let hips = Object.keys($scope.stars);
-                    PlotService.scatter(hips, [$scope.xaxis, $scope.yaxis], $scope.excluded_cat).then(function (data) {
+                    PlotService.scatter($scope.solarnorm, hips, [$scope.xaxis, $scope.yaxis], $scope.excluded_cat).then(function (data) {
                         /**
                          * Sample data:
                          * stars: {
@@ -424,12 +437,12 @@
                     "type": "xy",
                     "autoMargins": true,
                     "autoMarginOffset": 20,
-                    "handDrawn": true,
+                    "handDrawn": false,
                     "addClassNames": false,
                     "graphs": [
                         {
-                            "bullet": "diamond",
-                            "bulletSize": 20,
+                            "bullet": "round",
+                            "bulletSize": 10,
                             "lineAlpha": 0,
                             "valueField": "value",
                             "xField": "x",
@@ -554,9 +567,14 @@
 
             app.factory('PlotService', function ($http, $q) {
                 return {
-                    "scatter": function (stars=[], elements=[], catalogs=[]) {
+                    "scatter": function (solarnorm, stars=[], elements=[], catalogs=[]) {
                         let deferred = $q.defer();
-                        let data = {'stars': stars, 'elements': elements, 'catalogs': catalogs};
+                        let data = {
+                            'normalization': solarnorm,
+                            'stars': stars,
+                            'elements': elements,
+                            'catalogs': catalogs
+                        };
                         $http.post(`/plots/composition/`, data).success(function (data) {
                             deferred.resolve(data);
                         }).error(function (err) {

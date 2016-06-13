@@ -1,14 +1,31 @@
 {% extends "index.html" %}
 {% block title %}Import Data{% endblock %}
 {% block head %}
-{{ super() }}
-<link rel="stylesheet" type="text/css" href="/static/bower_components/blueimp-file-upload/css/jquery.fileupload.css">
+    {{ super() }}
+    <link rel="stylesheet" type="text/css"
+          href="/static/bower_components/blueimp-file-upload/css/jquery.fileupload.css">
+    <style type="text/css">
+        .form-inline .form-group {
+            vertical-align: top;
+            margin-right: 15px;
+        }
+    </style>
 {% endblock %}
 {% block content %}
-<h2>Import data</h2>
-<div id="status" class="alert alert-info hide" role="alert">...</div>
-<form id="uploadForm">
-    <div class="form-group">
+    <h2>Import data</h2>
+    <div id="status" class="alert alert-info hide" role="alert">...</div>
+    <form id="uploadForm" class="form-inline">
+        <div class="form-group">
+            <label for="normalization">Solar Normalization</label>
+            <select id="normalization" name="normalization" class="form-control">
+                <option value="Lodders et al. (2009)">Lodders et al. (2009)</option>
+                <option value="Anders & Grevesse (1989)">Anders & Grevesse (1989)</option>
+                <option value="Anders & Grevesse (1989), Fe = 7.47">Anders & Grevesse (1989), Fe = 7.47</option>
+                <option value="Grevesse & Sauval (1998)">Grevesse & Sauval (1998)</option>
+                <option value="Asplund et al. (2009)">Asplund et al. (2009)</option>
+            </select>
+        </div>
+        <div class="form-group">
         <span class="btn btn-success fileinput-button">
             <i class="glyphicon glyphicon-plus"></i>
             <span>Select file...</span>
@@ -16,14 +33,14 @@
             <input id="fileupload" type="file" name="file" data-url="/upload">
         </span>
 
-        <p class="help-block">See below for supported formats</p>
-    </div>
-    <button type="submit" id="uploadSubmitBtn" class="btn btn-default">Submit</button>
-</form>
+            <p class="help-block">See below for supported formats</p>
+        </div>
+        <button type="submit" id="uploadSubmitBtn" class="btn btn-default">Upload</button>
+    </form>
 
-<h2>Supported Formats</h2>
-<h3>Hypatia</h3>
-<pre>
+    <h2>Supported Formats</h2>
+    <h3>Hypatia</h3>
+    <pre>
     Star: hip = 7444
     hd = 9712
     bd = B+40  328
@@ -44,8 +61,8 @@
     TiH 5.14 [Adamow et al. (2014)]
 </pre>
 
-<h3>Exo Planets</h3>
-<pre>
+    <h3>Exo Planets</h3>
+    <pre>
     Star: hip = 77783
     hd = 142245
     bd = B+15 2925
@@ -72,37 +89,37 @@
     TiH 5.12 [Adamow et al. (2014)]
 </pre>
 
-<p>Note: Here 9999.00 value for UVW and 999.0 for any other column are considered NULL or empty values</p>
+    <p>Note: Here 9999.00 value for UVW and 999.0 for any other column are considered NULL or empty values</p>
 
-<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.6.15/browser.js"></script>-->
-<script type="text/javascript" src="/static/bower_components/jquery/dist/jquery.min.js"></script>
-<!--<script type="text/javascript" src="/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>-->
-<!-- file upload-->
-<script src="/static/bower_components/blueimp-file-upload/js/vendor/jquery.ui.widget.js"></script>
-<script src="/static/bower_components/blueimp-file-upload/js/jquery.iframe-transport.js"></script>
-<script src="/static/bower_components/blueimp-file-upload/js/jquery.fileupload.js"></script>
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.6.15/browser.js"></script>-->
+    <script type="text/javascript" src="/static/bower_components/jquery/dist/jquery.min.js"></script>
+    <!--<script type="text/javascript" src="/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>-->
+    <!-- file upload-->
+    <script src="/static/bower_components/blueimp-file-upload/js/vendor/jquery.ui.widget.js"></script>
+    <script src="/static/bower_components/blueimp-file-upload/js/jquery.iframe-transport.js"></script>
+    <script src="/static/bower_components/blueimp-file-upload/js/jquery.fileupload.js"></script>
 
 
-<script type="text/javascript">
-    $('#fileupload').fileupload({
-        dataType: 'json',
-        autoUpload: false,
-        add: function (e, data) {
-            $("#uploadSubmitBtn").click(function () {
-                $(this).attr('disabled', true);
-                data.submit();
-                // IMPORTANT: The below clears the file properly. Form reset or any other approach did not work :(
-                $("#fileupload").replaceWith('<input id="fileupload" type="file" name="file" data-url="/upload">')
-            });
-        },
-        always: function (e, data) {
-            if (!data.errorThrown)
-                $("#status").removeClass('hide').text(`Imported ${data.files[0].name} (${data.files[0].size}B). `).append(`<a href="/log/${data.result.log}" target="_blank" class="alert-link">Download details of this import</a>`);
-            else
-                $("#status").removeClass('hide').text('Unable to import. Try to remember as much sequence of operations you have done and share it with the developer.')
+    <script type="text/javascript">
+        $('#fileupload').fileupload({
+            dataType: 'json',
+            autoUpload: false,
+            add: function (e, data) {
+                $("#uploadSubmitBtn").click(function () {
+                    $(this).attr('disabled', true);
+                    data.submit();
+                    // IMPORTANT: The below clears the file properly. Form reset or any other approach did not work :(
+                    $("#fileupload").replaceWith('<input id="fileupload" type="file" name="file" data-url="/upload">')
+                });
+            },
+            always: function (e, data) {
+                if (!data.errorThrown)
+                    $("#status").removeClass('hide').text(`Imported ${data.files[0].name} (${data.files[0].size}B). `).append(`<a href="/log/${data.result.log}" target="_blank" class="alert-link">Download details of this import</a>`);
+                else
+                    $("#status").removeClass('hide').text('Unable to import. Try to remember as much sequence of operations you have done and share it with the developer.')
 
-            $("#uploadSubmitBtn").attr('disabled', false);
-        }
-    });
-</script>
+                $("#uploadSubmitBtn").attr('disabled', false);
+            }
+        });
+    </script>
 {% endblock %}

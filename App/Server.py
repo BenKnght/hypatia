@@ -20,14 +20,14 @@ from Utils.utils import upsert
 app = Flask(__name__)
 
 LOG_DIR = os.environ['LOGFILES_PATH'] if 'LOGFILES_PATH' in os.environ else './logs/'
-UPLOADS_DIR = os.environ['DATAFILES_PATH'] if 'DATAFILES_PATH' in os.environ else './uploads/'
+UPLOADS_DIR = os.environ['DATAFILES_PATH'] if 'DATAFILES_PATH' in os.environ else './datafiles/'
 DATABASE = os.environ['DB_NAME'] if 'DB_NAME' in os.environ else 'astronomy'
 
 
 # HTML Services
 @app.route('/')
 def index():
-    # return render_template('import.html')
+    # return import_data()
     return explore()
 
 
@@ -74,7 +74,7 @@ def upload():
 
             filepath = os.path.join(UPLOADS_DIR, datafile.filename)
             datafile.save(filepath)  # to file system
-            Importer.run(filepath, c)
+            Importer.run(filepath, c, {"normalization": request.form['normalization']})
 
             logger.removeHandler(f)
             f.close()
@@ -93,7 +93,8 @@ def stars(page, limit):
     """
     try:
         # TODO: Possible SQL injection due to WHERE clause
-        query = "SELECT * FROM star WHERE {} LIMIT %s OFFSET %s".format(request.args.get("query") or "1 = 1")
+        query = "SELECT * FROM star WHERE {} ORDER BY `hip` LIMIT %s OFFSET %s".format(
+            request.args.get("query") or "1 = 1")
         db_res = MySQL.execute(DATABASE, query, [limit, page * limit])
         index_of_hip = db_res['columns'].index('hip')
         resp = {row[index_of_hip]: dict(zip(db_res['columns'], [str(t) if type(t) is bytearray else t for t in row]))
@@ -110,6 +111,7 @@ def composition_scatter():
     Median composition of requested elements for the requested star considering common catalogs
     POST BODY:
     {
+        normalization: [required] the type of solar normalization
         stars: [required] comma separated list of hips
         elements: [required] comma separated list of elements for which compositions are required
         catalogs: [optional] comma separated list of catalogs (author_year column) to exclude if provided, else all will be used
@@ -117,6 +119,7 @@ def composition_scatter():
     :return: {hip1: {FeH: 0.5, OH: -0.07, ...}, {hip2: {FeH: 0.09, ...}}
     """
     try:
+        solarnorm = request.json['normalization']
         stars = map(lambda s: s.strip(), request.json['stars'])
         elements = map(lambda e: e.strip(), request.json['elements'])
         catalogs = map(lambda c: c.strip(), request.json.get('catalogs', []))
@@ -126,7 +129,8 @@ def composition_scatter():
                       t1.element,
                       t1.value
                     FROM composition t1, catalogue c, composition t2
-                      WHERE t1.cid = t2.cid
+                      WHERE t1.solarnorm = '%s' AND t2.solarnorm = '%s'
+                      AND t1.cid = t2.cid
                       AND t1.element <> t2.element
                       AND t1.hip = t2.hip
                       AND t1.hip IN (%s)
@@ -137,14 +141,12 @@ def composition_scatter():
         in_str_elems = ','.join(['%s'] * len(elements))
         in_str_cats = ','.join(['%s'] * len(catalogs))
         catalog_query = 'AND c.author_year NOT IN (%s)' % in_str_cats if len(catalogs) > 0 else ''
-        db_res = MySQL.execute(DATABASE, query % (in_str_stars, in_str_elems, in_str_elems, catalog_query),
-                               stars + elements + elements + catalogs)
+        db_res = MySQL.execute(DATABASE, query % (solarnorm, solarnorm, in_str_stars, in_str_elems, in_str_elems,
+                                                  catalog_query), stars + elements + elements + catalogs)
 
         resp = {}
-        selected_catalogs = set()
         for row in db_res['rows']:
             upsert_dict_arr(resp, row[0], row[2], row[3])
-            selected_catalogs.add(row[1])
         for star in resp:
             for e in resp[star]:
                 resp[star][e] = median(resp[star][e])

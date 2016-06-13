@@ -4,8 +4,8 @@ from Parser.HypatiaExoParser import HypatiaExoParser
 import Config
 
 
-def run(input_file, c):
-    p = HypatiaExoParser(input_file)
+def run(input_file, c, meta):
+    p = HypatiaExoParser(input_file, meta['normalization'])
     if c:
         for star, elements, planets in p.next():
             try:
@@ -35,9 +35,9 @@ def run(input_file, c):
 def main():
     Config.setup_logging()
     c = MySQL.get_connection('astronomy_test')
-    # run('./Assets/test_inp.txt', c)
-    run('./Assets/exo_test_inp.txt', c)
-    # run('./Assets/hypatia_norm_16_01_10.txt', c)
+    # run('./Assets/test_inp.txt', c, {"normalization": "Lodders et al. (2009)"})
+    run('./Assets/exo_test_inp.txt', c, {"normalization": "Lodders et al. (2009)"})
+    # run('./Assets/hypatia_norm_16_01_10.txt', c, {"normalization": "Lodders et al. (2009)"})
 
 
 if __name__ == '__main__':

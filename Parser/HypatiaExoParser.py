@@ -9,8 +9,9 @@ from Model.Planet import Planet
 
 
 class HypatiaExoParser(Parser):
-    def __init__(self, filepath):
+    def __init__(self, filepath, solarnorm):
         super(HypatiaExoParser, self).__init__(filepath)
+        self.solarnorm = solarnorm
 
     # Note: Keys should be in lower case
     column_map = {
@@ -81,7 +82,7 @@ class HypatiaExoParser(Parser):
                                 if re.match(r'blank', element):  # ignore if element is marked as blank#
                                     continue
                                 catalogue = Catalogue(author_year)
-                                composition = Composition(None, None, element, value)
+                                composition = Composition(self.solarnorm, None, None, element, value)
                                 elements.append((catalogue, composition))
                             else:
                                 logger.warning('Unknown composition of star, "%s". Line unable to parse: "%s"',

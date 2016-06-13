@@ -29,6 +29,7 @@ Assumptions related to the domain or business logic
 - 251021: Each attribute of the star is on its own line
 - 251024: Because of the way the records are updated, if a catalogue is updated say from 'FeH 0.3 [Adamow et al. (2015)]' to 'FeH 0.3 [Adamow et al. (2016)]' a new catalogue is added and the particular composition for that catalogue will still be present with old catalogue in the composition table. For the above example the table composition will have 2 entries, one with 2015 catalogue and one with 2016 Fix: Delete the star completely and add it again. Deleting a star, also deletes the corresponding composition elements, but catalogues are retained as other stars may still use it!
 - 251026: M_p, P, e, a planet information should be in the same order in the input file for import
+- General: All solar normalizations have same stars. Its only the composition for each that changes. In the explore page, we do  not consider the type of normalization selected when filtering stars
 
 ## Code Related
 
