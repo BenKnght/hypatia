@@ -89,7 +89,7 @@
                 aria_label: 'elements for y axis',
                 buttons: []
             };
-            $scope.xaxis = {
+            $scope.xaxis_num = {
                 aria_label: 'elements for x axis',
                 buttons: []
             };
@@ -103,7 +103,7 @@
 
             $scope.updateChart = function () {
                 let cids = $scope.getValuesOfButtonsPressed($scope.catalogs.buttons);
-                let xelems = $scope.getValuesOfButtonsPressed($scope.xaxis.buttons);
+                let xelems = $scope.getValuesOfButtonsPressed($scope.xaxis_num.buttons);
                 let yelems = $scope.getValuesOfButtonsPressed($scope.yaxes.buttons);
 
                 if(xelems.length == 0 || yelems.length == 0) return;
@@ -111,7 +111,7 @@
                 let elems = new Set(xelems.concat(yelems))
                 StarService.getCompositions($scope.hip, [...elems]).then(function(compositions) {
                     $scope.chartData = compositions;
-                    let xelems = $scope.getValuesOfButtonsPressed($scope.xaxis.buttons);
+                    let xelems = $scope.getValuesOfButtonsPressed($scope.xaxis_num.buttons);
                     let yelems = $scope.getValuesOfButtonsPressed($scope.yaxes.buttons);
                     let data = [];
                     for(let x of xelems) {
@@ -137,7 +137,7 @@
                     return;
 
                 StarService.getElements($scope.hip).then(function (data) {
-                    $scope.xaxis.buttons = data.elements.map(e => ({value: e, display: e}))
+                    $scope.xaxis_num.buttons = data.elements.map(e => ({value: e, display: e}))
                     $scope.yaxes.buttons = data.elements.map(e => ({value: e, display: e}))
                     $scope.visibility.showStarGo = false;
                 }, function (errors) {

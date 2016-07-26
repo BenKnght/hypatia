@@ -118,8 +118,11 @@
                             <div class="form-inline">
                                 <div class="form-group">
                                     <label for="xaxis">X-Axis</label>
-                                    <select id="xaxis" ng-model="xaxis" class="form-control"
+                                    <select id="xaxis" ng-model="xaxis_num" class="form-control"
                                             ng-change="updateChart()">
+                                        <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
+                                    </select> /
+                                    <select class="form-control" ng-model="xaxis_den" ng-change="updateChart()">
                                         <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
                                     </select>
                                 </div>
@@ -128,8 +131,11 @@
                             <div class="form-inline" style="margin-top: 10px;">
                                 <div class="form-group">
                                     <label for="yaxis">Y-Axis</label>
-                                    <select id="yaxis" ng-model="yaxis" class="form-control"
+                                    <select id="yaxis" ng-model="yaxis_num" class="form-control"
                                             ng-change="updateChart()">
+                                        <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
+                                    </select> /
+                                    <select class="form-control" ng-model="yaxis_den" ng-change="updateChart()">
                                         <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
                                     </select>
                                 </div>
@@ -248,71 +254,74 @@
 
             app.controller('VisualizationController', function ($scope, $location, StarService, PlotService, $q, PlanetService) {
 
-                $scope.columns = ['hip', 'hd', 'hr', 'spec', 'vmag', 'bv', 'dist', 'rascension', 'declination',
-                    'position', 'disk', 'uvw', 'teff', 'logg', 'mass', 'vsini']; // 'multiple_planets'
+                $scope.columns = ['hip', 'hd', 'spec', 'vmag', 'bv', 'dist', 'rascension', 'declination',
+                    'position', 'disk', 'uvw', 'teff', 'logg', 'mass', 'vsini']; // 'hr', 'multiple_planets'
                 $scope.elements = {
-                    'YH': 'Y/H',
-                    'NiH': 'Ni/H',
-                    'KH': 'K/H',
-                    'LaH': 'La/H',
-                    'MgH': 'Mg/H',
-                    'RuH': 'Ru/H',
-                    'CeH': 'Ce/H',
-                    'CaIIH': 'CaII/H',
-                    'DyH': 'Dy/H',
-                    'MoH': 'Mo/H',
-                    'LaIIH': 'LaII/H',
-                    'NH': 'N/H',
-                    'EuH': 'Eu/H',
-                    'NaH': 'Na/H',
-                    'CeIIH': 'CeII/H',
-                    'LiH': 'Li/H',
-                    'NdIIH': 'NdII/H',
-                    'FeH': 'Fe/H',
-                    'SH': 'S/H',
-                    'TiH': 'Ti/H',
-                    'SmH': 'Sm/H',
-                    'EuIIH': 'EuII/H',
-                    'BaIIH': 'BaII/H',
-                    'SiH': 'Si/H',
-                    'ZrH': 'Zr/H',
-                    'CH': 'C/H',
-                    'ScH': 'Sc/H',
-                    'AlH': 'Al/H',
-                    'YIIH': 'YII/H',
-                    'VH': 'V/H',
-                    'PdH': 'Pd/H',
-                    'TiIIH': 'TiII/H',
-                    'PrH': 'Pr/H',
-                    'MnH': 'Mn/H',
-                    'GdH': 'Gd/H',
-                    'ScIIH': 'ScII/H',
-                    'SmIIH': 'SmII/H',
-                    'PH': 'P/H',
-                    'SrIIH': 'SrII/H',
-                    'AgH': 'Ag/H',
-                    'NdH': 'Nd/H',
-                    'BeH': 'Be/H',
-                    'OH': 'O/H',
-                    'SrH': 'Sr/H',
-                    'ZnH': 'Zn/H',
-                    'CrIIH': 'CrII/H',
-                    'HfH': 'Hf/H',
-                    'CaH': 'Ca/H',
-                    'VIIH': 'VII/H',
-                    'ZrIIH': 'ZrII/H',
-                    'CoH': 'Co/H',
-                    'CrH': 'Cr/H',
-                    'CuH': 'Cu/H',
-                    'PbH': 'Pb/H',
-                    'BaH': 'Ba/H'
+                    'YH': 'Y',
+                    'NiH': 'Ni',
+                    'KH': 'K',
+                    'LaH': 'La',
+                    'MgH': 'Mg',
+                    'RuH': 'Ru',
+                    'CeH': 'Ce',
+                    'CaIIH': 'CaII',
+                    'DyH': 'Dy',
+                    'MoH': 'Mo',
+                    'LaIIH': 'LaII',
+                    'NH': 'N',
+                    'EuH': 'Eu',
+                    'NaH': 'Na',
+                    'CeIIH': 'CeII',
+                    'LiH': 'Li',
+                    'NdIIH': 'NdII',
+                    'FeH': 'Fe',
+                    'SH': 'S',
+                    'TiH': 'Ti',
+                    'SmH': 'Sm',
+                    'EuIIH': 'EuII',
+                    'BaIIH': 'BaII',
+                    'SiH': 'Si',
+                    'ZrH': 'Zr',
+                    'CH': 'C',
+                    'ScH': 'Sc',
+                    'AlH': 'Al',
+                    'YIIH': 'YII',
+                    'VH': 'V',
+                    'PdH': 'Pd',
+                    'TiIIH': 'TiII',
+                    'PrH': 'Pr',
+                    'MnH': 'Mn',
+                    'GdH': 'Gd',
+                    'ScIIH': 'ScII',
+                    'SmIIH': 'SmII',
+                    'PH': 'P',
+                    'SrIIH': 'SrII',
+                    'AgH': 'Ag',
+                    'NdH': 'Nd',
+                    'BeH': 'Be',
+                    'OH': 'O',
+                    'SrH': 'Sr',
+                    'ZnH': 'Zn',
+                    'CrIIH': 'CrII',
+                    'HfH': 'Hf',
+                    'CaH': 'Ca',
+                    'VIIH': 'VII',
+                    'ZrIIH': 'ZrII',
+                    'CoH': 'Co',
+                    'CrH': 'Cr',
+                    'CuH': 'Cu',
+                    'PbH': 'Pb',
+                    'BaH': 'Ba',
+                    'H': 'H'
                 };
                 $scope.catalogs = ["Adamow et al. (2014)", "Adibekyan et al. (2012)", "Adibekyan et al. (2015)", "Allen & Porto de Mello (2011)", "Allende Prieto et al. (2004)", "Battistini et al. 2015", "Bensby et al. (2005)", "Bensby et al. 2014", "Bergemann et al. (2010)", "Bertran de Lis et al. (2015)", "Biazzo et al. (2012)", "Bodaghee et al. (2003)", "Boesgaard et al. (2011)", "Bond et al. (2006, 2008)", "Brewer & Carney (2006)", "Brugamyer et al. (2011)", "Bruntt et al. (2012)", "Caffau et al. (2011)", "Carretta et al. (2000)", "Castro et al. (1997)", "Castro et al. (1999)", "Chen et al. (2000)", "D'Orazi et al. (2012)", "da Silva et al. (2012)", "Delgado Mena et al. (2010)", "Ecuvillon et al. (2004)", "Ecuvillon et al. (2006)", "Edvardsson et al. (1993)", "Feltzing & Gustafsson (1998)", "Feltzing et al. (2007)", "Francois (1986)", "Francois (1988)", "Fulbright (2000)", "Galeev et al. (2004)", "Gebran et al. (2010)", "Gehren et al. (2004)", "Gehren et al. (2006)", "Gilli et al. (2006)", "Gonzalez & Laws (2007)", "Gonzalez et al. (2001)", "Gonzalez Hernandez et al. (2010)", "Gonzalez Hernandez et al. (2013)", "Gratton et al. (2000)", "Gratton et al. (2003)", "Gustafsson et al. (1999)", "Huang et al. (2005)", "Ishigaki et al. (2012)", "Ishigaki et al. (2013)", "Jofre et al. (2015)", "Jonsell et al. (2005)", "Kang et al. (2011)", "Karinkuzhi et al. (2014)", "Koch & Edvardsson (2002)", "Korotin et al. (2011)", "Laird (1985)", "Liu et al. (2012)", "Luck & Heiter (2005)", "Maldonado et al. (2013)", "Mann et al. 2013", "Mashonkina et al. (2006)", "Mashonkina et al. (2007)", "Mishenina et al. (2003)", "Mishenina et al. (2004)", "Mishenina et al. (2008)", "Mishenina et al. (2011)", "Mishenina et al. (2013)", "Mishenina et al. (2015)", "Mortier et al. (2013)", "Neuforge-Verheecke & Magain (1997)", "Neves et al. (2009)", "Nissen & Schuster (1997)", "Nissen & Schuster (2010)", "Nissen et al. (2011)", "Nissen et al. (2014)", "Nissen et al. (2015)", "Peterson et al. (2013)", "Petigura & Marcy (2011)", "Porto de Mello et al. (2008)", "Ramirez et al. (2007)", "Ramirez et al. (2009)", "Ramirez et al. (2012)", "Ramirez et al. (2014a)", "Ramirez et al. (2014b)", "Recio Blanco et al. (2012)", "Reddy et al. (2003)", "Reddy et al. (2006)", "Sadakane et al. (2002)", "Schuler et al. (2011)", "Shi et al. (2004)", "Shi et al. (2012)", "Sitnova et al. (2015)", "Stonkute et al. (2012)", "Stonkute et al. (2013)", "Takeda (2007), Takeda & Honda (2005)", "Takeda et al. (2005)", "Thevenin (1998)", "Trevisan et al. (2011)", "Valenti & Fischer (2005)", "Wang et al. (2011)", "Wu et al. (2015)", "Yan et al. (2015)", "Zenovience et al. (2014)", "Zhang & Zhao (2006)", "Zhao et al. (2002)"];
                 $scope.stars = {};
                 $scope.noPlanets = false; // flag to indicate whether to retrieve planet info
                 $scope.showElements = false;
-                $scope.xaxis = 'FeH';
-                $scope.yaxis = 'AlH';
+                $scope.xaxis_num = 'FeH';
+                $scope.yaxis_num = 'AlH';
+                $scope.xaxis_den = 'H';
+                $scope.yaxis_den = 'H';
                 $scope.solarnorm = 'Lodders et al. (2009)';
                 $scope.agg = 'median';
 
@@ -376,14 +385,14 @@
                  * Renders chart using the starComposition global variable which is set during AJAX call
                  */
                 $scope.renderChart = function renderChart() {
-                    let xlabel = `[${$scope.elements[$scope.xaxis]}]`;
-                    let ylabel = `[${$scope.elements[$scope.yaxis]}]`;
+                    let xlabel = `[${$scope.elements[$scope.xaxis_num]}/${$scope.elements[$scope.xaxis_den]}]`;
+                    let ylabel = `[${$scope.elements[$scope.yaxis_num]}/${$scope.elements[$scope.yaxis_den]}]`;
                     $scope.chart.dataProvider = [];
                     for (let star in starComposition) {
                         let composition = starComposition[star];
                         try {
-                            let x = $scope.agg === 'mean' ? composition[$scope.xaxis]['avg'] : composition[$scope.xaxis]['mdn'];
-                            let y = $scope.agg === 'mean' ? composition[$scope.yaxis]['avg'] : composition[$scope.yaxis]['mdn'];
+                            let x = $scope.agg === 'mean' ? getPlotValue(composition, 'x', 'avg') : getPlotValue(composition, 'x', 'mdn');
+                            let y = $scope.agg === 'mean' ? getPlotValue(composition, 'y', 'avg') : getPlotValue(composition, 'y', 'mdn');
                             $scope.chart.dataProvider.push({
                                 x: x,
                                 y: y,
@@ -400,9 +409,27 @@
                     $scope.chart.validateData();
                 };
 
+                /**
+                 * Returns the aggregated value for the complex element from simple elements
+                 * Using Fe/H and Si/H, compute the value for Fe/Si and return
+                 */
+                function getPlotValue(composition, axis, aggregation) {
+                    let op1 = 0, op2 = 0;
+                    if (axis === 'x') {
+                        op1 = composition[$scope.xaxis_num][aggregation];
+                        op2 = $scope.xaxis_den !== 'H' ? composition[$scope.xaxis_den][aggregation] : 0;
+                    }
+                    else {
+                        op1 = composition[$scope.yaxis_num][aggregation];
+                        op2 = $scope.yaxis_den !== 'H' ? composition[$scope.yaxis_den][aggregation] : 0;
+                    }
+                    return op1 - op2;
+                }
+
                 $scope.updateChart = function () {
                     let hips = Object.keys($scope.stars);
-                    PlotService.scatter($scope.solarnorm, hips, [$scope.xaxis, $scope.yaxis], $scope.excluded_cat).then(function (data) {
+                    PlotService.scatter($scope.solarnorm, hips,
+                            [$scope.xaxis_num, $scope.yaxis_num, $scope.xaxis_den, $scope.yaxis_den], $scope.excluded_cat).then(function (data) {
                         /**
                          * Sample data:
                          * stars: {
