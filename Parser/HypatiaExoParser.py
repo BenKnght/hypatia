@@ -26,9 +26,9 @@ class HypatiaExoParser(Parser):
         'ra/dec': ['rascension', 'declination'],
         'ra': 'rascension',
         'dec': 'declination',
-        'position': 'position',
+        'position': 'doesnt matter',  # split into three keys (x, y, z) while parsing
         'disk component': 'disk',
-        'uvw': 'uvw',
+        'uvw': 'doesnt matter',  # split into three keys (x, y, z) while parsing
         'teff': 'teff',  # exo planets columns from here
         'logg': 'logg',
         'mass(m_s)': 'mass',
@@ -69,12 +69,29 @@ class HypatiaExoParser(Parser):
 
                             value = attr_value[-1].strip()
                             if key in self.column_map:
-                                # Handling NULL values
-                                if value == '999.0' and key != 'uvw':
-                                    value = None
-                                elif value.find('9999.0') >= 0 and key == 'uvw':
-                                    value = None
-                                s.set(self.column_map[key], value)
+                                # Splitting UVW and Position attributes
+                                if key == 'uvw':
+                                    u, v, w = map(float,
+                                                  re.search(r'\((-?[0-9.]+), (-?[0-9.]+), (-?[0-9.]+)\)',
+                                                            value).groups())
+                                    s.set('u', u)
+                                    s.set('v', v)
+                                    s.set('w', w)
+                                elif key == 'position':
+                                    x, y, z = map(float,
+                                                  re.search(r'\[(-?[0-9.]+), (-?[0-9.]+), (-?[0-9.]+)\]',
+                                                            value).groups())
+                                    s.set('x', x)
+                                    s.set('y', y)
+                                    s.set('z', z)
+                                else:
+                                    # Handling NULL values
+                                    if value == '999.0' and key != 'uvw':
+                                        value = None
+                                    elif value.find('9999.0') >= 0 and key == 'uvw':
+                                        value = None
+                                    s.set(self.column_map[key], value)
+
                         else:
                             comp_cat = re.match(r'(\w+)(.*)\[(.+)\]', raw_attr)
                             if comp_cat:
