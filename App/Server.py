@@ -16,6 +16,8 @@ from Config import logger
 from Utils.utils import median, mean
 from Utils.utils import upsert_dict_arr
 from Utils.utils import upsert
+from Model.Star import Star
+from Model.Planet import Planet
 
 app = Flask(__name__)
 
@@ -39,6 +41,16 @@ def import_data():
 @app.route('/visualize')
 def visualize():
     return render_template('visualization.html')
+
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+
+@app.route('/ack')
+def ack():
+    return render_template('acknowledgement.html')
 
 
 @app.route('/explore')
@@ -151,6 +163,67 @@ def composition_scatter():
             for e in resp[star]:
                 resp[star][e] = {'mdn': median(resp[star][e]), 'avg': mean(resp[star][e])}
         return jsonify({'stars': resp, "status": {"message": "Fetched %s stars" % len(resp)}})
+    except Exception as err:
+        logger.exception(err)
+        return jsonify({"status": {"message": "Something went wrong"}}), 500
+
+
+@app.route('/stellar-props/', methods=['POST'])
+def stellar_props():
+    """
+    Retrieve stellar properties
+    POST BODY:
+    {
+        properties: [optional] one or more of properties of a star, e.g. [u, w, dist, v, mass]
+        stars: [required] a list of hips for whose the above properties are required
+    }
+    where,
+    mass => stellar mass
+    if properties are ignored, all properties are returned
+    :return: {hip1: {mass: 867, dist: 0.889}, hip2: {mass: 773, dist: 0.8772}}
+    """
+    try:
+        stars = map(lambda s: s.strip(), request.json['stars'])
+        props = map(lambda s: s.strip(), request.json.get('properties', Star.DEFAULTS.keys()))
+        props_cols_map = {'u': 'u', 'w': 'w', 'dist': 'dist', 'v': 'v', 'mass': 'mass'}
+        columns = [props_cols_map.get(p, p) for p in props]
+        query = "SELECT hip, {} FROM star WHERE hip IN (%s);".format(', '.join(columns))
+        resp = tuples_as_dict(query, stars, 0)
+        return jsonify({'stars': resp, "status": {"message": "Fetched info for %s stars" % len(resp)}})
+    except Exception as err:
+        logger.exception(err)
+        return jsonify({"status": {"message": "Something went wrong"}}), 500
+
+
+@app.route('/planet-props/', methods=['POST'])
+def planet_props():
+    """
+    **** DEPRECATED: Use /planets/ instead ****
+
+    Retrieve planet properties
+    POST BODY:
+    {
+        properties: [optional] one or more of properties of a planet, e.g. [name, mass, hip, p, e, a]
+        stars: [required] a list of hips whose planets' properties are returned
+    }
+    where,
+    mass => planet mass
+    if properties are ignored, all properties are returned
+    :return: {hip1_planet1: {m_p: 867, p: 0.889}, hip2_planet2: {m_p: 773, p: 0.8772}}
+    """
+    try:
+        stars = map(lambda s: s.strip(), request.json['stars'])
+        props = map(lambda s: s.strip(), request.json.get('properties', Planet.DEFAULTS.keys()))
+        props_cols_map = {'name': 'name', 'mass': 'm_p as mass', 'p': 'p', 'e': 'e', 'a': 'a'}
+        columns = [props_cols_map.get(p, p) for p in props]
+        query = """SELECT
+                      CONCAT(s.hip, ' [', p.name, ']') as star_planet, {}
+                    FROM planet p
+                    INNER JOIN star s
+                      ON s.hip = p.hip
+                    WHERE s.hip IN (%s)""".format(', '.join(columns))
+        resp = tuples_as_dict(query, stars, 0)
+        return jsonify({'planets': resp, "status": {"message": "Fetched info for %s planets" % len(resp)}})
     except Exception as err:
         logger.exception(err)
         return jsonify({"status": {"message": "Something went wrong"}}), 500

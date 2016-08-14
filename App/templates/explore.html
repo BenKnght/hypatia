@@ -61,7 +61,7 @@
                     </select>
                 </div>
 
-                <input style="width: 83.333333%" type="text" class="form-control col-md-10 col-xs-10 col-sm-10"
+                <input style="width: 81.67%" type="text" class="form-control col-md-9 col-xs-9 col-sm-9"
                        id="search" placeholder="Filter criteria" ng-focus="openSuggestions()"
                        data-toggle="popover" data-placement="top" data-container="body" data-trigger="hover focus"
                        data-html="true" title="Need help? Readme" ng-model="filterText"
@@ -69,12 +69,32 @@
                 <button type="submit" style="margin-left: 10px;" class="btn btn-primary col-md-1 col-xs-1 col-sm-1">
                     Filter
                 </button>
+                <button type="submit" style="margin-left: 10px;" class="btn btn-primary col-md-1 col-xs-1 col-sm-1">
+                    Hide Table
+                </button>
                 <div class="clearfix"></div>
             </form>
 
-            <div class="panel panel-default">
-                <div class="panel-body" id="chart" style="width: 100%; height: 500px;"></div>
-            </div>
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs">
+                <li role="presentation" ng-class="{active: activeChart == 1}">
+                    <a href="#" ng-click="activeChart = 1; renderChart1()">X/Y vs X/Y</a>
+                </li>
+                <li role="presentation" ng-class="{active: activeChart == 2}">
+                    <a href="#" ng-click="activeChart = 2; renderChart2()">Stellar</a>
+                </li>
+                <li role="presentation" ng-class="{active: activeChart == 3}">
+                    <a href="#" ng-click="activeChart = 3; renderChart3()">Stars & their Planets</a>
+                </li>
+                <li role="presentation" ng-class="{active: activeChart == 4}">
+                    <a href="#" ng-click="activeChart = 4; renderChart4()">Planet hosts vs non-hosts</a>
+                </li>
+                <!--<li role="presentation" ng-class="{active: activeChart == 5}">
+                    <a href="#" ng-click="activeChart = 5; renderChart5()">Chart 5</a>
+                </li>-->
+            </ul>
+
+            <div class="panel-body" id="chart" style="width: 100%; height: 500px;"></div>
 
             <div id="controls" class="row" style="margin-bottom: 15px;">
                 <div class="col-md-2">
@@ -117,27 +137,80 @@
                         <div class="col-md-4">
                             <div class="form-inline">
                                 <div class="form-group">
-                                    <label for="xaxis">X-Axis</label>
-                                    <select id="xaxis" ng-model="xaxis_num" class="form-control"
-                                            ng-change="updateChart()">
-                                        <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
-                                    </select> /
-                                    <select class="form-control" ng-model="xaxis_den" ng-change="updateChart()">
-                                        <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
-                                    </select>
+                                    <label>X-Axis</label>
+
+                                    <div ng-show="activeChart == 1">
+                                        <select ng-model="xaxis_num" class="form-control" ng-change="updateChart()">
+                                            <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
+                                        </select> /
+                                        <select class="form-control" ng-model="xaxis_den" ng-change="updateChart()">
+                                            <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
+                                        </select>
+                                    </div>
+
+                                    <div ng-show="activeChart == 2">
+                                        <select ng-model="c2_xaxis" class="form-control" ng-change="updateChart()">
+                                            <option value="dist">Distance</option>
+                                            <option value="v">V</option>
+                                        </select>
+                                    </div>
+
+                                    <div ng-show="activeChart == 3">
+                                        <select ng-model="c3_xaxis" class="form-control" ng-change="updateChart()">
+                                            <option value="pmass">Planet Mass</option>
+                                            <option value="e">Eccentricity</option>
+                                            <option value="smass">Stellar Mass</option>
+                                        </select>
+                                    </div>
+
+                                    <div ng-show="activeChart == 4">
+                                        <select ng-model="c4_xaxis_num" class="form-control" ng-change="updateChart()">
+                                            <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
+                                        </select> /
+                                        <select class="form-control" ng-model="c4_xaxis_den" ng-change="updateChart()">
+                                            <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
+                                        </select>
+                                    </div>
+
+                                    <div ng-show="activeChart == 5"></div>
                                 </div>
                             </div>
 
                             <div class="form-inline" style="margin-top: 10px;">
                                 <div class="form-group">
-                                    <label for="yaxis">Y-Axis</label>
-                                    <select id="yaxis" ng-model="yaxis_num" class="form-control"
-                                            ng-change="updateChart()">
-                                        <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
-                                    </select> /
-                                    <select class="form-control" ng-model="yaxis_den" ng-change="updateChart()">
-                                        <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
-                                    </select>
+                                    <label>Y-Axis</label>
+
+                                    <div ng-show="activeChart == 1">
+                                        <select ng-model="yaxis_num" class="form-control" ng-change="updateChart()">
+                                            <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
+                                        </select> /
+                                        <select class="form-control" ng-model="yaxis_den" ng-change="updateChart()">
+                                            <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
+                                        </select>
+                                    </div>
+
+                                    <div ng-show="activeChart == 2">
+                                        <select ng-model="c2_yaxis" class="form-control" ng-change="updateChart()">
+                                            <option value="uwsq">SQRT(u^2 + w^2)</option>
+                                        </select>
+                                    </div>
+
+                                    <div ng-show="activeChart == 3">
+                                        <select ng-model="c3_yaxis" class="form-control" ng-change="updateChart()">
+                                            <option value="period">Period</option>
+                                            <option value="sma">SMA</option>
+                                            <option value="pmass">Planet mass</option>
+                                            <option value="e">Eccentricity</option>
+                                        </select>
+                                    </div>
+
+                                    <div ng-show="activeChart == 4">
+                                        <select ng-model="c4_yaxis" class="form-control" ng-change="updateChart()">
+                                            <option value="rfreq">Relative Frequency</option>
+                                        </select>
+                                    </div>
+
+                                    <div ng-show="activeChart == 5"></div>
                                 </div>
                             </div>
                         </div>
@@ -149,14 +222,14 @@
                                     <input type="radio" name="aggRadios" data-toggle="tooltip"
                                            data-trigger="hover"
                                            data-placement="top" title="Use Median Aggregation" ng-model="agg"
-                                           ng-click="renderChart()" value="median"> Median</label>
+                                           ng-click="renderChart1()" value="median"> Median</label>
                             </div>
                             <div class="radio">
                                 <label>
                                     <input type="radio" name="aggRadios" data-toggle="tooltip"
                                            data-placement="top"
                                            title="Use Mean Aggregation" data-trigger="hover" ng-model="agg"
-                                           ng-click="renderChart()" value="mean"> Mean</label>
+                                           ng-click="renderChart1()" value="mean"> Mean</label>
                             </div>
                         </div>
 
@@ -177,6 +250,9 @@
                     <thead>
                     <tr>
                         <th colspan="{{ columns.length }}">Showing {{cStars()}} stars</th>
+                    </tr>
+                    <tr>
+                        <th ng-repeat="c in columns_meta" title='{{ c[1] }}'>{{c[0]}}</th>
                     </tr>
                     <tr>
                         <th ng-repeat="c in columns">{{c}}</th>
@@ -256,6 +332,7 @@
 
                 $scope.columns = ['hip', 'hd', 'spec', 'vmag', 'bv', 'dist', 'rascension', 'declination',
                     'x', 'y', 'z', 'disk', 'u', 'v', 'w', 'teff', 'logg', 'mass', 'vsini']; // 'hr', 'multiple_planets'
+                $scope.columns_meta = [['HIP', 'Hipparcos Catalog identifier'], ['HD', 'Henry Draper Catalogue identifier'], ['BD', 'Bonner Durchmusterung identifier'], ['RA', 'right ascension, ICRS, Epoch=J1991.25 from Hipparcos'], ['Dec', 'Declination, ICRS, Epoch=J1991.25 from Hipparcos'], ['X', 'x position in pc, dist*cos(dec)*cos(ra)'], ['Y', 'y position in pc, dist*cos(dec)*sin(ra)'], ['Z ', 'z position in pc, dist*sin(dec)'], ['dist', 'distance from the Sun in pc'], ['disk', 'thin or thick based on the kinematic prescription in Bensby et al.', '2003) '], ['Spec Type', 'spectral type from Hipparcos'], ['V', 'V magnitude from Hipparcos'], ['B-V', 'Johnson color from Hipparcos'], ['u', 'galactic space velocity in km/s, to/from the direction of the Galactic center'], ['v', 'galactic space velocity in km/s, galactic rotation'], ['w', 'galactic space velocity in km/s, to/from the North Galactic Pole'], ['Planet', 'letter designation for the planet'], ['p', 'planetary period in days from exoplanets.org'], ['M_p', 'planetary mass m*sin(i) in Jupiter masses from exoplanets.org'], ['e', 'planetary eccentricity from exoplanets.org'], ['a', 'planetary semi-major axis in AU from exoplanets.org'], ['T_eff', 'stellar effective temperature in Kelvin from exoplanets.org'], ['log(g)', 'stellar surface gravity from exoplanets.org'], ['M_s', 'stellar mass from exoplanets.org'], ['v*sin(i)', 'equatorial velocity of the star in km/s from exoplanets.org)']];
                 $scope.elements = {
                     'YH': 'Y',
                     'NiH': 'Ni',
@@ -318,12 +395,20 @@
                 $scope.stars = {};
                 $scope.noPlanets = false; // flag to indicate whether to retrieve planet info
                 $scope.showElements = false;
+                $scope.solarnorm = 'Lodders et al. (2009)';
+                $scope.agg = 'median';
+                $scope.activeChart = 4;
                 $scope.xaxis_num = 'FeH';
                 $scope.yaxis_num = 'AlH';
                 $scope.xaxis_den = 'H';
                 $scope.yaxis_den = 'H';
-                $scope.solarnorm = 'Lodders et al. (2009)';
-                $scope.agg = 'median';
+                $scope.c2_xaxis = 'dist';
+                $scope.c2_yaxis = 'uwsq';
+                $scope.c3_xaxis = 'e';
+                $scope.c3_yaxis = 'sma';
+                $scope.c4_xaxis_num = 'TiIIH';
+                $scope.c4_xaxis_den = 'FeH';
+                $scope.c4_yaxis = 'rfreq';
 
                 // TODO: Update URL to make it sharable
                 // $location.search({"search": "hip>100"});
@@ -341,8 +426,9 @@
                         $scope.updateChart();
                         if ($scope.showElements)
                             fetchElements();
-                        if (!$scope.noPlanets)
-                            fetchPlanets();
+                        // if (!$scope.noPlanets)
+                        fetchPlanets();
+                        // fetchPlanetProps();
                         deferred.resolve();
                     }, function (err) {
                         setAlertMsg(err, $scope, 'danger');
@@ -382,18 +468,63 @@
                 });
 
                 /**
-                 * Renders chart using the starComposition global variable which is set during AJAX call
+                 * Finds the min and max values in a list of objects
+                 * param: objects => list of JS objects. Eg. [{name: 'A', age: 10}, {name: ...}...]
+                 * param: objectKey => comparison key for each object. Eg. age
+                 * return: Min and max values of all objects. Eg. Min age and max age in all objects given
                  */
-                $scope.renderChart = function renderChart() {
+                function minMaxForRange(objects, objectKey) {
+                    var min = Infinity, max = -Infinity;
+                    for (let obj of objects) {
+                        try {
+                            let val = obj[objectKey];
+                            if (val < min) {
+                                min = val;
+                            }
+                            if (val > max) {
+                                max = val;
+                            }
+                        }
+                        catch (err) {
+                        }
+                    }
+                    return [min, max];
+                }
+
+                /**
+                 * Returns a color from a palette based on number of bins
+                 * Using the min and max values passed, the function divides the range into equal sized bins
+                 * Each of the bins is assigned a color
+                 * Then for the value, val, passed a color in HEX is returned depending in which bin the value lies
+                 * This is used for deciding the colors of bullets in the plots
+                 */
+                function bulletColor(val, min, max) {
+                    const bins = 3;
+                    const colors = ["#cc0000", "#00cc00", "#5555cc"];
+                    let interval = (max - min) / bins * 1.0;
+                    let tick1 = min + interval;
+                    let tick2 = tick1 + interval;
+                    if (val <= tick1)
+                        return colors[0];
+                    if (val > tick2)
+                        return colors[2];
+                    return colors[1];
+                }
+
+                /**
+                 * Renders X/Y VS X/Y chart using the starComposition global variable which is set during AJAX call
+                 */
+                $scope.renderChart1 = function () {
                     let xlabel = `[${$scope.elements[$scope.xaxis_num]}/${$scope.elements[$scope.xaxis_den]}]`;
                     let ylabel = `[${$scope.elements[$scope.yaxis_num]}/${$scope.elements[$scope.yaxis_den]}]`;
-                    $scope.chart.dataProvider = [];
+
+                    let points = [];
                     for (let star in starComposition) {
                         let composition = starComposition[star];
                         try {
                             let x = $scope.agg === 'mean' ? getPlotValue(composition, 'x', 'avg') : getPlotValue(composition, 'x', 'mdn');
                             let y = $scope.agg === 'mean' ? getPlotValue(composition, 'y', 'avg') : getPlotValue(composition, 'y', 'mdn');
-                            $scope.chart.dataProvider.push({
+                            points.push({
                                 x: x,
                                 y: y,
                                 value: `Star: ${star}<br />${xlabel}: ${x}<br />${ylabel}: ${y}`
@@ -404,8 +535,141 @@
                         }
                     }
 
+                    let min = 0, max = 0;
+                    [min, max] = minMaxForRange(points, 'x');
+                    for (let p of points) {
+                        p['color'] = bulletColor(p['x'], min, max);
+                    }
+
+                    $scope.chart.dataProvider = points;
                     $scope.chart.valueAxes[0].title = xlabel;
                     $scope.chart.valueAxes[1].title = ylabel;
+                    $scope.chart.validateData();
+                };
+
+                $scope.renderChart2 = function () {
+                    let axes_labels = {'uwsq': 'SQRT(u^2 + w^2)', 'dist': 'Distance', 'v': 'V'};
+                    let xlabel = axes_labels[$scope.c2_xaxis];
+                    let ylabel = axes_labels[$scope.c2_yaxis];
+
+                    let points = [];
+                    for (let hip in $scope.stars) {
+                        let star = $scope.stars[hip];
+                        try {
+                            let x = star[$scope.c2_xaxis];
+                            let y = computeY(star);
+                            points.push({
+                                x: x,
+                                y: y,
+                                value: `Star: ${hip}<br />${xlabel}: ${x}<br />${ylabel}: ${y}`
+                            });
+                        }
+                        catch (err) {
+                            console.log(`For star, ${star}. Error: ${err}`);
+                        }
+                    }
+
+                    let min = 0, max = 0;
+                    [min, max] = minMaxForRange(points, 'x');
+                    for (let p of points) {
+                        p['color'] = bulletColor(p['x'], min, max);
+                    }
+
+                    $scope.chart.dataProvider = points;
+                    $scope.chart.valueAxes[0].title = xlabel;
+                    $scope.chart.valueAxes[1].title = ylabel;
+                    $scope.chart.validateData();
+
+                    function computeY(star) {
+                        switch ($scope.c2_yaxis) {
+                            default:
+                                // SQRT(u^2 + w^2)
+                                return Math.sqrt(star['u'] * star['u'] + star['w'] * star['w']);
+                        }
+                    }
+                };
+
+                $scope.renderChart3 = function () {
+                    let axes_labels = {
+                        'period': 'Period',
+                        'sma': 'Semi Major Axis',
+                        'pmass': 'Planetary Mass',
+                        'e': 'Eccentricity'
+                    };
+                    let xlabel = axes_labels[$scope.c3_xaxis];
+                    let ylabel = axes_labels[$scope.c3_yaxis];
+
+                    let points = [];
+                    for (let hip in $scope.stars) {
+                        let star = $scope.stars[hip], x = 0, y = 0;
+                        try {
+                            if (isStellarProperty($scope.c3_xaxis))
+                                x = computeXY(star, "X");
+                            if (isStellarProperty($scope.c3_yaxis))
+                                y = computeXY(star, "Y");
+
+                            for (let planet of star['planets']) {
+                                x = isStellarProperty($scope.c3_xaxis) ? x : computeXY(planet, "X");
+                                y = isStellarProperty($scope.c3_yaxis) ? y : computeXY(planet, "Y");
+                                points.push({
+                                    x: x,
+                                    y: y,
+                                    value: `${hip} [${planet['name']}]<br />${xlabel}: ${x}<br />${ylabel}: ${y}`
+                                });
+                            }
+                        }
+                        catch (err) {
+                            console.log(`For star, ${star}. Error: ${err}`);
+                        }
+                    }
+
+                    let min = 0, max = 0;
+                    [min, max] = minMaxForRange(points, 'x');
+                    for (let p of points) {
+                        p['color'] = bulletColor(p['x'], min, max);
+                    }
+
+                    $scope.chart.dataProvider = points;
+                    $scope.chart.valueAxes[0].title = xlabel;
+                    $scope.chart.valueAxes[1].title = ylabel;
+                    $scope.chart.validateData();
+
+                    /*
+                     Returns true if given property is stellar
+                     */
+                    function isStellarProperty(property) {
+                        return ['smass'].indexOf(property) >= 0;
+                    }
+
+                    function computeXY(obj, axis) {
+                        // obj can be instance of a star or a planet
+                        let attr = axis === 'X' ? $scope.c3_xaxis : $scope.c3_yaxis;
+                        switch (attr) {
+                            case 'pmass':
+                                return parseFloat(obj['m_p']);
+                            case 'period':
+                                return parseFloat(obj['p']);
+                            case 'sma':
+                                return parseFloat(obj['a']);
+                            case 'smass':
+                                return parseFloat(obj['mass']);
+                            default:
+                                return parseFloat(obj[attr]);
+                        }
+                    }
+                };
+
+                $scope.renderChart4 = function () {
+                    $scope.chart.dataProvider = [];
+                    $scope.chart.valueAxes[0].title = "";
+                    $scope.chart.valueAxes[1].title = "";
+                    $scope.chart.validateData();
+                };
+
+                $scope.renderChart5 = function () {
+                    $scope.chart.dataProvider = [];
+                    $scope.chart.valueAxes[0].title = "";
+                    $scope.chart.valueAxes[1].title = "";
                     $scope.chart.validateData();
                 };
 
@@ -427,23 +691,50 @@
                 }
 
                 $scope.updateChart = function () {
-                    let hips = Object.keys($scope.stars);
-                    PlotService.scatter($scope.solarnorm, hips,
-                            [$scope.xaxis_num, $scope.yaxis_num, $scope.xaxis_den, $scope.yaxis_den], $scope.excluded_cat).then(function (data) {
-                        /**
-                         * Sample data:
-                         * stars: {
+                    switch ($scope.activeChart) {
+                        case 1:
+                            let hips = Object.keys($scope.stars);
+                            PlotService.scatter($scope.solarnorm, hips,
+                                    [$scope.xaxis_num, $scope.yaxis_num, $scope.xaxis_den, $scope.yaxis_den], $scope.excluded_cat).then(function (data) {
+                                /**
+                                 * Sample data:
+                                 * stars: {
                                     7444: {
                                         AlH: {mdn: -0.029, avg: -0.03},
                                         CaH: {mdn: 0.01, avg: 0.03},
                                         FeH: {mdn: -0.5, avg: -0.43}
                                     },
                                }
-                         */
-                        starComposition = data['stars'];
-                        $scope.renderChart();
-                    });
+                                 */
+                                starComposition = data['stars'];
+                                $scope.renderChart1();
+                            });
+                            break;
+                        case 2:
+                            $scope.renderChart2();
+                            break;
+                        case 3:
+                            $scope.renderChart3();
+                            break;
+                        case 4:
+                            $scope.renderChart4();
+                            break;
+                        case 5:
+                            $scope.renderChart5();
+                            break;
+                    }
                 };
+
+                function fetchPlanetProps() {
+                    let hips = Object.keys($scope.stars);
+                    PlanetService.planet_props(hips).then(function (data) {
+                        /**
+                         * Sample data:
+                         * {hip1 [planet1]: {m_p: 867, p: 0.889}, hip2 [planet2]: {m_p: 773, p: 0.8772}}
+                         */
+                        $scope.star_planet = data['planets'];
+                    });
+                }
 
                 function fetchPlanets() {
                     let hips = Object.keys($scope.stars);
@@ -505,7 +796,7 @@
                 }
 
                 // Charting
-                $scope.chart = AmCharts.makeChart("chart", {
+                const chartProperties = {
                     "type": "xy",
                     "autoMargins": true,
                     "autoMarginOffset": 20,
@@ -514,6 +805,7 @@
                     "graphs": [
                         {
                             "bullet": "round",
+                            "colorField": "color",
                             "bulletSize": 10,
                             "lineAlpha": 0,
                             "valueField": "value",
@@ -534,7 +826,8 @@
                     "export": {
                         "enabled": true
                     }
-                });
+                };
+                $scope.chart = AmCharts.makeChart("chart", chartProperties);
 
                 // Filter Textbox
 //            let start = new State($scope.columns);
@@ -628,6 +921,18 @@
                     "planets": function (stars=[]) {
                         let deferred = $q.defer();
                         $http.post('/planets/', {stars: stars}).success(function (data) {
+                            deferred.resolve(data);
+                        }).error(function (err) {
+                            deferred.reject(err);
+                        });
+                        return deferred.promise;
+                    },
+                    "planet_props": function (stars=[], properties=['name', 'mass', 'e']) {
+                        let deferred = $q.defer();
+                        $http.post('/planet-props/', {
+                            stars: stars,
+                            properties: properties
+                        }).success(function (data) {
                             deferred.resolve(data);
                         }).error(function (err) {
                             deferred.reject(err);

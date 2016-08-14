@@ -74,22 +74,19 @@ class HypatiaExoParser(Parser):
                                     u, v, w = map(float,
                                                   re.search(r'\((-?[0-9.]+), (-?[0-9.]+), (-?[0-9.]+)\)',
                                                             value).groups())
-                                    s.set('u', u)
-                                    s.set('v', v)
-                                    s.set('w', w)
+                                    s.set('u', self.handle_nulls(key, u))
+                                    s.set('v', self.handle_nulls(key, v))
+                                    s.set('w', self.handle_nulls(key, w))
                                 elif key == 'position':
                                     x, y, z = map(float,
                                                   re.search(r'\[(-?[0-9.]+), (-?[0-9.]+), (-?[0-9.]+)\]',
                                                             value).groups())
-                                    s.set('x', x)
-                                    s.set('y', y)
-                                    s.set('z', z)
+                                    s.set('x', self.handle_nulls(key, x))
+                                    s.set('y', self.handle_nulls(key, y))
+                                    s.set('z', self.handle_nulls(key, z))
                                 else:
                                     # Handling NULL values
-                                    if value == '999.0' and key != 'uvw':
-                                        value = None
-                                    elif value.find('9999.0') >= 0 and key == 'uvw':
-                                        value = None
+                                    value = self.handle_nulls(key, value)
                                     s.set(self.column_map[key], value)
 
                         else:
@@ -108,6 +105,14 @@ class HypatiaExoParser(Parser):
                 except:
                     # Pass the exception to be handled at the higher level
                     raise
+
+    @staticmethod
+    def handle_nulls(key, value):
+        if value == '999.0' and key != 'uvw':
+            value = None
+        elif value.find('9999.0') >= 0 and key == 'uvw':
+            value = None
+        return value
 
     @staticmethod
     def _parse_planet(line, hip):
