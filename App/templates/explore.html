@@ -94,7 +94,20 @@
                 </li>-->
             </ul>
 
-            <div class="panel-body" id="chart" style="width: 100%; height: 500px;"></div>
+            <div class="row">
+                <div class="panel-body col-md-10" id="chart" style="height: 500px;"></div>
+                <div class="panel-body col-md-2">
+                    <div id="legend"></div>
+                    <div class="form-inline" style="margin-left: 50px;" ng-hide="activeChart === 4">
+                        <select class="form-control" ng-model="zaxis_num" ng-change="updateZ()">
+                            <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
+                        </select> /
+                        <select class="form-control" ng-model="zaxis_den" ng-change="updateZ()">
+                            <option ng-repeat="(e, v) in elements" value="{{e}}">{{v}}</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
             <div id="controls" class="row" style="margin-bottom: 15px;">
                 <div class="col-md-2">
@@ -331,7 +344,7 @@
 
                 $scope.columns = ['hip', 'hd', 'bd', 'rascension', 'declination', 'x', 'y', 'z', 'dist',
                     'disk', 'spec', 'vmag', 'bv', 'u', 'v', 'w', 'planet', 'p', 'm_p', 'e', 'a', 'teff', 'logg', 'mass', 'vsini']; // 'hr', 'multiple_planets'
-                $scope.columns_meta = [['HIP', 'Hipparcos Catalog identifier'], ['HD', 'Henry Draper Catalogue identifier'], ['BD', 'Bonner Durchmusterung identifier'], ['RA', 'right ascension, ICRS, Epoch=J1991.25 from Hipparcos'], ['Dec', 'Declination, ICRS, Epoch=J1991.25 from Hipparcos'], ['X', 'x position in pc, dist*cos(dec)*cos(ra)'], ['Y', 'y position in pc, dist*cos(dec)*sin(ra)'], ['Z ', 'z position in pc, dist*sin(dec)'], ['dist', 'distance from the Sun in pc'], ['disk', 'thin or thick based on the kinematic prescription in Bensby et al.', '2003) '], ['Spec Type', 'spectral type from Hipparcos'], ['V', 'V magnitude from Hipparcos'], ['B-V', 'Johnson color from Hipparcos'], ['u', 'galactic space velocity in km/s, to/from the direction of the Galactic center'], ['v', 'galactic space velocity in km/s, galactic rotation'], ['w', 'galactic space velocity in km/s, to/from the North Galactic Pole'], ['Planet', 'letter designation for the planet'], ['p', 'planetary period in days from exoplanets.org'], ['M_p', 'planetary mass m*sin(i) in Jupiter masses from exoplanets.org'], ['e', 'planetary eccentricity from exoplanets.org'], ['a', 'planetary semi-major axis in AU from exoplanets.org'], ['T_eff', 'stellar effective temperature in Kelvin from exoplanets.org'], ['log(g)', 'stellar surface gravity from exoplanets.org'], ['M_s', 'stellar mass from exoplanets.org'], ['v*sin(i)', 'equatorial velocity of the star in km/s from exoplanets.org)']];
+                $scope.columns_meta = [['HIP', 'Hipparcos Catalog identifier'], ['HD', 'Henry Draper Catalogue identifier'], ['BD', 'Bonner Durchmusterung identifier'], ['RA', 'right ascension, Epoch=J2000 from Hipparcos'], ['Dec', 'Declination, Epoch=J2000 from Hipparcos'], ['X', 'x position in pc, dist*cos(dec)*cos(ra)'], ['Y', 'y position in pc, dist*cos(dec)*sin(ra)'], ['Z ', 'z position in pc, dist*sin(dec)'], ['dist', 'distance from the Sun in pc'], ['disk', 'thin or thick based on the kinematic prescription in Bensby et al.', '2003) '], ['Spec Type', 'spectral type from Hipparcos'], ['V', 'V magnitude from Hipparcos'], ['B-V', 'Johnson color from Hipparcos'], ['u', 'galactic space velocity in km/s, to/from the direction of the Galactic center'], ['v', 'galactic space velocity in km/s, galactic rotation'], ['w', 'galactic space velocity in km/s, to/from the North Galactic Pole'], ['Planet', 'letter designation for the planet'], ['p', 'planetary period in days from exoplanets.org'], ['M_p', 'planetary mass m*sin(i) in Jupiter masses from exoplanets.org'], ['e', 'planetary eccentricity from exoplanets.org'], ['a', 'planetary semi-major axis in AU from exoplanets.org'], ['T_eff', 'stellar effective temperature in Kelvin from exoplanets.org'], ['log(g)', 'stellar surface gravity from exoplanets.org'], ['M_s', 'stellar mass from exoplanets.org'], ['v*sin(i)', 'equatorial velocity of the star in km/s from exoplanets.org)']];
                 $scope.elements = {
                     'YH': 'Y',
                     'NiH': 'Ni',
@@ -396,7 +409,7 @@
                 $scope.showElements = false;
                 $scope.solarnorm = 'Lodders et al. (2009)';
                 $scope.agg = 'median';
-                $scope.activeChart = 4;
+                $scope.activeChart = 1;
                 $scope.xaxis_num = 'FeH';
                 $scope.yaxis_num = 'AlH';
                 $scope.xaxis_den = 'H';
@@ -408,6 +421,8 @@
                 $scope.c4_xaxis_num = 'TiIIH';
                 $scope.c4_xaxis_den = 'FeH';
                 $scope.c4_yaxis = 'rfreq';
+                $scope.zaxis_num = 'FeH';
+                $scope.zaxis_den = 'H';
 
                 // TODO: Update URL to make it sharable
                 // $location.search({"search": "hip>100"});
@@ -422,12 +437,10 @@
                             deferred.reject(); // fetched all stars
                         angular.extend($scope.stars, data['stars']);
                         setAlertMsg(data, $scope, 'success');
-                        $scope.updateChart();
+                        $scope.updateZ();
                         if ($scope.showElements)
                             fetchElements();
-                        // if (!$scope.noPlanets)
                         fetchPlanets();
-                        // fetchPlanetProps();
                         deferred.resolve();
                     }, function (err) {
                         setAlertMsg(err, $scope, 'danger');
@@ -511,6 +524,61 @@
                 }
 
                 /**
+                 * Updates the coloring or the 3rd dimension of the chart
+                 * For every star based on its X/Y under Z-axis, its bullet is assigned to be used later
+                 */
+                function computeZ() {
+                    let deferred = $q.defer();
+                    var hips = Object.keys($scope.stars);
+                    PlotService.scatter($scope.solarnorm, hips,
+                            [$scope.zaxis_num, $scope.zaxis_den], $scope.excluded_cat).then(function (data) {
+                        /**
+                         * Sample data:
+                         * stars: {
+                                    7444: {
+                                        AlH: {mdn: -0.029, avg: -0.03},
+                                        CaH: {mdn: 0.01, avg: 0.03},
+                                        FeH: {mdn: -0.5, avg: -0.43}
+                                    },
+                               }
+                         */
+
+                        let points = [], starComposition = data['stars'];
+                        for (let star in starComposition) {
+                            let composition = starComposition[star];
+                            try {
+                                let z = $scope.agg === 'mean' ? getPlotValue(composition, ['z_xaxis_num', 'z_xaxis_den'], 'avg') : getPlotValue(composition, ['z_xaxis_num', 'z_xaxis_den'], 'mdn');
+                                points.push({
+                                    "z": z,
+                                    "star": star
+                                });
+                            }
+                            catch (err) {
+                                console.log(`For star, ${star}. Error: ${err}`);
+                            }
+                        }
+
+                        let min = 0, max = 0;
+                        [min, max] = minMaxForRange(points, 'z');
+                        for (let p of points) {
+                            $scope.stars[p['star']]['color'] = bulletColor(p['x'], min, max);
+                        }
+                        deferred.resolve();
+                    }, function (err) {
+                        deferred.reject();
+                    });
+                    return deferred.promise;
+                }
+
+                $scope.updateZ = function () {
+                    computeZ().then(function () {
+                        $scope.updateChart();
+                    }, function () {
+                        console.warn('Computing Z axis failed');
+                    });
+                };
+
+                /**
                  * Renders X/Y VS X/Y chart using the starComposition which has element information
                  */
                 $scope.renderChart1 = function (starComposition) {
@@ -521,23 +589,18 @@
                     for (let star in starComposition) {
                         let composition = starComposition[star];
                         try {
-                            let x = $scope.agg === 'mean' ? getPlotValue(composition, 'x', 'avg') : getPlotValue(composition, 'x', 'mdn');
-                            let y = $scope.agg === 'mean' ? getPlotValue(composition, 'y', 'avg') : getPlotValue(composition, 'y', 'mdn');
+                            let x = $scope.agg === 'mean' ? getPlotValue(composition, ['xaxis_num', 'xaxis_den'], 'avg') : getPlotValue(composition, ['xaxis_num', 'xaxis_den'], 'mdn');
+                            let y = $scope.agg === 'mean' ? getPlotValue(composition, ['yaxis_num', 'yaxis_den'], 'avg') : getPlotValue(composition, ['yaxis_num', 'yaxis_den'], 'mdn');
                             points.push({
                                 x: x,
                                 y: y,
-                                value: `Star: ${star}<br />${xlabel}: ${x}<br />${ylabel}: ${y}`
+                                value: `Star: ${star}<br />${xlabel}: ${x}<br />${ylabel}: ${y}`,
+                                color: $scope.stars[star]['color']
                             });
                         }
                         catch (err) {
                             console.log(`For star, ${star}. Error: ${err}`);
                         }
-                    }
-
-                    let min = 0, max = 0;
-                    [min, max] = minMaxForRange(points, 'x');
-                    for (let p of points) {
-                        p['color'] = bulletColor(p['x'], min, max);
                     }
 
                     $scope.chart.dataProvider = points;
@@ -560,18 +623,13 @@
                             points.push({
                                 x: x,
                                 y: y,
-                                value: `Star: ${hip}<br />${xlabel}: ${x}<br />${ylabel}: ${y}`
+                                value: `Star: ${hip}<br />${xlabel}: ${x}<br />${ylabel}: ${y}`,
+                                color: $scope.stars[star]['color']
                             });
                         }
                         catch (err) {
                             console.log(`For star, ${star}. Error: ${err}`);
                         }
-                    }
-
-                    let min = 0, max = 0;
-                    [min, max] = minMaxForRange(points, 'x');
-                    for (let p of points) {
-                        p['color'] = bulletColor(p['x'], min, max);
                     }
 
                     $scope.chart.dataProvider = points;
@@ -613,19 +671,14 @@
                                 points.push({
                                     x: x,
                                     y: y,
-                                    value: `${hip} [${planet['name']}]<br />${xlabel}: ${x}<br />${ylabel}: ${y}`
+                                    value: `${hip} [${planet['name']}]<br />${xlabel}: ${x}<br />${ylabel}: ${y}`,
+                                    color: $scope.stars[star]['color']
                                 });
                             }
                         }
                         catch (err) {
                             console.log(`For star, ${star}. Error: ${err}`);
                         }
-                    }
-
-                    let min = 0, max = 0;
-                    [min, max] = minMaxForRange(points, 'x');
-                    for (let p of points) {
-                        p['color'] = bulletColor(p['x'], min, max);
                     }
 
                     $scope.chart.dataProvider = points;
@@ -666,7 +719,7 @@
                     let stars_composition = [];
                     for (let star in starComposition) {
                         let composition = starComposition[star];
-                        stars_composition.push({'k': $scope.agg === 'mean' ? getPlotValue(composition, 'x', 'avg') : getPlotValue(composition, 'x', 'mdn')});
+                        stars_composition.push({'k': $scope.agg === 'mean' ? getPlotValue(composition, ['c4_xaxis_num', 'c4_xaxis_den'], 'avg') : getPlotValue(composition, ['c4_xaxis_num', 'c4_xaxis_den'], 'mdn')});
                     }
 
                     var min = 0, max = 0;
@@ -694,10 +747,6 @@
                         }
                     }
 
-                    for (let p of points) {
-                        p['color'] = bulletColor(p['x'], min, max);
-                    }
-
                     $scope.chart.dataProvider = points;
                     $scope.chart.valueAxes[0].title = xlabel;
                     $scope.chart.valueAxes[1].title = ylabel;
@@ -714,17 +763,11 @@
                 /**
                  * Returns the aggregated value for the complex element from simple elements
                  * Using Fe/H and Si/H, compute the value for Fe/Si and return
+                 * :param: axis: is an array having 2 elements. First is key for x-axis and second, key for y-axis
                  */
                 function getPlotValue(composition, axis, aggregation) {
-                    let op1 = 0, op2 = 0;
-                    if (axis === 'x') {
-                        op1 = composition[$scope.xaxis_num][aggregation];
-                        op2 = $scope.xaxis_den !== 'H' ? composition[$scope.xaxis_den][aggregation] : 0;
-                    }
-                    else {
-                        op1 = composition[$scope.yaxis_num][aggregation];
-                        op2 = $scope.yaxis_den !== 'H' ? composition[$scope.yaxis_den][aggregation] : 0;
-                    }
+                    let op1 = composition[$scope[axis[0]]][aggregation];
+                    let op2 = $scope[axis[1]] !== 'H' ? composition[$scope[axis[1]]][aggregation] : 0;
                     return op1 - op2;
                 }
 
@@ -886,61 +929,21 @@
                     "dataProvider": [],
                     "export": {
                         "enabled": true
+                    },
+                    legend: {
+                        position: "right",
+                        align: "center",
+                        markerType: "round",
+                        valueText: "aa",
+                        data: [{title: "Low", color: "#cc0000"}, {title: "Medium", color: "#00cc00"}, {
+                            title: "High",
+                            color: "#5555cc"
+                        }],
+                        divId: "legend"
                     }
                 };
                 $scope.chart = AmCharts.makeChart("chart", chartProperties);
 
-                // Filter Textbox
-//            let start = new State($scope.columns);
-//            let filterExpr = new StateMachine(start); // key
-//            filterExpr.next(new State(['>', '<', '=', '<=', '>='])); // operator
-//            filterExpr.next(new State([], true)); // values
-//            filterExpr.next(new State(['AND', 'OR'])); // combiner
-//            filterExpr.next(start);
-//            window.myState = filterExpr;
-//            let filterTokens = [], states = [];
-//
-//            function suggest(request, response) {
-//                // console.log(filterExpr.current.values);
-//                response(filterExpr.current.values);
-//            }
-//
-//            function moveToNextState(newItem) {
-//                filterTokens.push(newItem);
-//                this.value = filterTokens.join(" ") + " ";
-//                states.push(filterExpr.current); // TODO: handle when user starting modifying existing expression
-//                filterExpr.next(); // move to next state
-//                $scope.openSuggestions();
-//            }
-//
-//            function getTokens(filterText) {
-//                // tokens are separated by a space
-//                return filterText.split(/\s+/);
-//            }
-//
-//            function selected(event, ui) {
-//                moveToNextState.call(this, ui.item.value.trim());
-//                return false; // prevent default behavior of replacing the entire input field's value
-//            }
-//
-//            $scope.openSuggestions = function () {
-//                $("#search").autocomplete("search"); // open suggestions
-//            };
-//            $("#search").bind('keypress', function (event) {
-//                if (event.keyCode === $.ui.keyCode.SPACE) {
-//                    // Move to next state
-//                    moveToNextState.call(this, getTokens(this.value.trim()).pop());
-//                    event.preventDefault();
-//                }
-//            }).autocomplete({
-//                source: suggest,
-//                select: selected, minLength: 0,
-//                focus: function () {
-//                    return false;
-//                }
-//            });
-//
-//            $("#search").autocomplete("disable"); // TODO: disabled until entire control is ready
             });
 
             app.directive('myAlert', function () {
