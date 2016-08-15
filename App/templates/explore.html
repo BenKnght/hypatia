@@ -78,19 +78,19 @@
             <!-- Nav tabs -->
             <ul class="nav nav-tabs">
                 <li role="presentation" ng-class="{active: activeChart == 1}">
-                    <a href="#" ng-click="activeChart = 1; renderChart1()">X/Y vs X/Y</a>
+                    <a href="#" ng-click="activeChart = 1; updateChart()">X/Y vs X/Y</a>
                 </li>
                 <li role="presentation" ng-class="{active: activeChart == 2}">
-                    <a href="#" ng-click="activeChart = 2; renderChart2()">Stellar</a>
+                    <a href="#" ng-click="activeChart = 2; updateChart()">Stellar</a>
                 </li>
                 <li role="presentation" ng-class="{active: activeChart == 3}">
-                    <a href="#" ng-click="activeChart = 3; renderChart3()">Stars & their Planets</a>
+                    <a href="#" ng-click="activeChart = 3; updateChart()">Stars & their Planets</a>
                 </li>
                 <li role="presentation" ng-class="{active: activeChart == 4}">
-                    <a href="#" ng-click="activeChart = 4; renderChart4()">Planet hosts vs non-hosts</a>
+                    <a href="#" ng-click="activeChart = 4; updateChart()">Planet hosts vs non-hosts</a>
                 </li>
                 <!--<li role="presentation" ng-class="{active: activeChart == 5}">
-                    <a href="#" ng-click="activeChart = 5; renderChart5()">Chart 5</a>
+                    <a href="#" ng-click="activeChart = 5; updateChart()">Chart 5</a>
                 </li>-->
             </ul>
 
@@ -222,14 +222,14 @@
                                     <input type="radio" name="aggRadios" data-toggle="tooltip"
                                            data-trigger="hover"
                                            data-placement="top" title="Use Median Aggregation" ng-model="agg"
-                                           ng-click="renderChart1()" value="median"> Median</label>
+                                           ng-click="updateChart()" value="median"> Median</label>
                             </div>
                             <div class="radio">
                                 <label>
                                     <input type="radio" name="aggRadios" data-toggle="tooltip"
                                            data-placement="top"
                                            title="Use Mean Aggregation" data-trigger="hover" ng-model="agg"
-                                           ng-click="renderChart1()" value="mean"> Mean</label>
+                                           ng-click="updateChart()" value="mean"> Mean</label>
                             </div>
                         </div>
 
@@ -303,6 +303,7 @@
     <script type="text/javascript" src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="/static/bower_components/amcharts/dist/amcharts/amcharts.js"></script>
     <script type="text/javascript" src="/static/bower_components/amcharts/dist/amcharts/xy.js"></script>
+    <script type="text/javascript" src="/static/bower_components/amcharts/dist/amcharts/serial.js"></script>
     <script type="text/javascript"
             src="/static/bower_components/amcharts/dist/amcharts/plugins/export/export.min.js"></script>
 
@@ -414,7 +415,6 @@
                 // $location.search({"search": "hip>100"});
 
                 let pageNumber = 0, pageSize = 25;
-                let starComposition = null;
 
                 function fetchStars() {
                     let deferred = $q.defer();
@@ -512,9 +512,9 @@
                 }
 
                 /**
-                 * Renders X/Y VS X/Y chart using the starComposition global variable which is set during AJAX call
+                 * Renders X/Y VS X/Y chart using the starComposition which has element information
                  */
-                $scope.renderChart1 = function () {
+                $scope.renderChart1 = function (starComposition) {
                     let xlabel = `[${$scope.elements[$scope.xaxis_num]}/${$scope.elements[$scope.xaxis_den]}]`;
                     let ylabel = `[${$scope.elements[$scope.yaxis_num]}/${$scope.elements[$scope.yaxis_den]}]`;
 
@@ -659,10 +659,49 @@
                     }
                 };
 
-                $scope.renderChart4 = function () {
-                    $scope.chart.dataProvider = [];
-                    $scope.chart.valueAxes[0].title = "";
-                    $scope.chart.valueAxes[1].title = "";
+                $scope.renderChart4 = function (starComposition) {
+                    const axes_labels = {'rfreq': 'Relative Frequency'};
+                    let xlabel = `[${$scope.elements[$scope.c4_xaxis_num]}/${$scope.elements[$scope.c4_xaxis_den]}]`;
+                    let ylabel = axes_labels[$scope.c4_yaxis];
+
+                    let stars_composition = [];
+                    for (let star in starComposition) {
+                        let composition = starComposition[star];
+                        stars_composition.push({'k': $scope.agg === 'mean' ? getPlotValue(composition, 'x', 'avg') : getPlotValue(composition, 'x', 'mdn')});
+                    }
+
+                    var min = 0, max = 0;
+                    [min, max] = minMaxForRange(stars_composition, 'k');
+                    const BIN_SIZE = 0.1;
+                    let bins = Math.ceil((max - min) / BIN_SIZE);
+                    let counts = new Array(bins).fill(0); // ES6 only
+                    for (let star in stars_composition) {
+                        let composition = stars_composition[star]['k'];
+                        counts[Math.floor((composition - min) / BIN_SIZE)] += 1;
+                    }
+
+                    let points = [];
+                    for (let x = min, i = 0; x <= max + BIN_SIZE; x += BIN_SIZE, i++) {
+                        try {
+                            let y = counts[i];
+                            points.push({
+                                "x": x,
+                                "y": y,
+                                "value": `${xlabel}: ${x}<br />${ylabel}: ${y}`
+                            });
+                        }
+                        catch (err) {
+                            console.log(`Error: ${err}`);
+                        }
+                    }
+
+                    for (let p of points) {
+                        p['color'] = bulletColor(p['x'], min, max);
+                    }
+
+                    $scope.chart.dataProvider = points;
+                    $scope.chart.valueAxes[0].title = xlabel;
+                    $scope.chart.valueAxes[1].title = ylabel;
                     $scope.chart.validateData();
                 };
 
@@ -691,9 +730,15 @@
                 }
 
                 $scope.updateChart = function () {
+                    /*if ($scope.activeChart === 4) {
+                        $scope.chart.graphs = [columnGraph];
+                    }
+                    else {
+                        $scope.chart.graphs = [xyGraph];
+                    }*/
                     switch ($scope.activeChart) {
                         case 1:
-                            let hips = Object.keys($scope.stars);
+                            var hips = Object.keys($scope.stars);
                             PlotService.scatter($scope.solarnorm, hips,
                                     [$scope.xaxis_num, $scope.yaxis_num, $scope.xaxis_den, $scope.yaxis_den], $scope.excluded_cat).then(function (data) {
                                 /**
@@ -706,8 +751,7 @@
                                     },
                                }
                                  */
-                                starComposition = data['stars'];
-                                $scope.renderChart1();
+                                $scope.renderChart1(data['stars']);
                             });
                             break;
                         case 2:
@@ -717,7 +761,21 @@
                             $scope.renderChart3();
                             break;
                         case 4:
-                            $scope.renderChart4();
+                            hips = Object.keys($scope.stars);
+                            PlotService.scatter($scope.solarnorm, hips,
+                                    [$scope.c4_xaxis_num, $scope.c4_xaxis_den], $scope.excluded_cat).then(function (data) {
+                                /**
+                                 * Sample data:
+                                 * stars: {
+                                    7444: {
+                                        AlH: {mdn: -0.029, avg: -0.03},
+                                        CaH: {mdn: 0.01, avg: 0.03},
+                                        FeH: {mdn: -0.5, avg: -0.43}
+                                    },
+                               }
+                                 */
+                                $scope.renderChart4(data['stars']);
+                            });
                             break;
                         case 5:
                             $scope.renderChart5();
@@ -796,23 +854,26 @@
                 }
 
                 // Charting
+                const columnGraph = {
+                    "type": "column",
+                    "valueField": "y"
+                };
+                const xyGraph = {
+                    "bullet": "round",
+                    "colorField": "color",
+                    "bulletSize": 10,
+                    "lineAlpha": 0,
+                    "valueField": "value",
+                    "xField": "x",
+                    "yField": "y"
+                };
                 const chartProperties = {
                     "type": "xy",
                     "autoMargins": true,
                     "autoMarginOffset": 20,
                     "handDrawn": false,
                     "addClassNames": false,
-                    "graphs": [
-                        {
-                            "bullet": "round",
-                            "colorField": "color",
-                            "bulletSize": 10,
-                            "lineAlpha": 0,
-                            "valueField": "value",
-                            "xField": "x",
-                            "yField": "y"
-                        }
-                    ],
+                    "graphs": [xyGraph],
                     'valueAxes': [{
                         "position": "bottom",
                         "axisAlpha": 0,
@@ -822,6 +883,7 @@
                         "dashLength": 1,
                         "position": "left"
                     }],
+                    "categoryField": 'x',
                     "dataProvider": [],
                     "export": {
                         "enabled": true
