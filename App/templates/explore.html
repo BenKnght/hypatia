@@ -255,32 +255,29 @@
                         <th ng-repeat="c in columns_meta" title='{{ c[1] }}'>{{c[0]}}</th>
                     </tr>
                     <tr>
-                        <th ng-repeat="c in columns">{{c}}</th>
+                        <th ng-repeat="c in columns" title="Key to use in the filter textbox above"
+                            style="font-weight: 400; text-align: center; font-style: italic; font-size: 14px">
+                            {{c}}
+                        </th>
                     </tr>
                     </thead>
                     <tr ng-repeat-start="(hip, star) in stars">
                         <td ng-repeat="c in columns">{{ star[c] }}</td>
                     </tr>
-                    <tr ng-repeat-end ng-if="star['planets'] || (star['elements'] && showElements)">
+                    <tr ng-if="star['planets']" ng-repeat="p in star['planets']">
+                        <td ng-repeat="i in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]"></td>
+                        <!-- Empty cols for star info -->
+                        <td>{{ p['name'] }}</td>
+                        <td>{{ parseFloat(p['p']) }}</td>
+                        <td>{{ parseFloat(p['e']) }}</td>
+                        <td>{{ parseFloat(p['a']) }}</td>
+                        <td>{{ parseFloat(p['m_p']) }}</td>
+                        <td ng-repeat="i in [0,1,2,3]"></td> <!-- Empty cols for star info -->
+                    </tr>
+                    <tr ng-repeat-end ng-if="star['elements'] && showElements">
                         <td colspan="{{ columns.length }}" style="border:none; position: relative;">
                             <div class="row">
-                                <div class="col-md-4" style="max-height: 115px; overflow-y: scroll">
-                                    <!--<div class="position-me">
-                                        <div class="rotate-me">
-                                            <p>PLANETS</p>
-                                        </div>
-                                    </div>-->
-                                    <div class="col-md-6" ng-repeat="p in star['planets']">
-                                        <h4 class="media-heading">[{{ p['name'] }}]</h4>
-                                        <ul class="list-unstyled">
-                                            <li><strong>p: </strong>{{ p['p'] }}</li>
-                                            <li><strong>e: </strong>{{ p['e'] }}</li>
-                                            <li><strong>a: </strong>{{ p['a'] }}</li>
-                                            <li><strong>m_p: </strong>{{ p['m_p'] }}</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="col-md-7" style="max-height: 115px; overflow-y: scroll"
+                                <div class="col-md-12" style="max-height: 115px; overflow-y: scroll"
                                      ng-show="showElements">
                                     <div class="col-xs-6 col-md-3" ng-repeat="p in star['elements']">
                                         <h5 class="media-heading">{{ p['element'] }}
@@ -292,6 +289,7 @@
                             </div>
                         </td>
                     </tr>
+
                 </table>
             </div>
         </div>
@@ -331,8 +329,8 @@
 
             app.controller('VisualizationController', function ($scope, $location, StarService, PlotService, $q, PlanetService) {
 
-                $scope.columns = ['hip', 'hd', 'spec', 'vmag', 'bv', 'dist', 'rascension', 'declination',
-                    'x', 'y', 'z', 'disk', 'u', 'v', 'w', 'teff', 'logg', 'mass', 'vsini']; // 'hr', 'multiple_planets'
+                $scope.columns = ['hip', 'hd', 'bd', 'rascension', 'declination', 'x', 'y', 'z', 'dist',
+                    'disk', 'spec', 'vmag', 'bv', 'u', 'v', 'w', 'planet', 'p', 'm_p', 'e', 'a', 'teff', 'logg', 'mass', 'vsini']; // 'hr', 'multiple_planets'
                 $scope.columns_meta = [['HIP', 'Hipparcos Catalog identifier'], ['HD', 'Henry Draper Catalogue identifier'], ['BD', 'Bonner Durchmusterung identifier'], ['RA', 'right ascension, ICRS, Epoch=J1991.25 from Hipparcos'], ['Dec', 'Declination, ICRS, Epoch=J1991.25 from Hipparcos'], ['X', 'x position in pc, dist*cos(dec)*cos(ra)'], ['Y', 'y position in pc, dist*cos(dec)*sin(ra)'], ['Z ', 'z position in pc, dist*sin(dec)'], ['dist', 'distance from the Sun in pc'], ['disk', 'thin or thick based on the kinematic prescription in Bensby et al.', '2003) '], ['Spec Type', 'spectral type from Hipparcos'], ['V', 'V magnitude from Hipparcos'], ['B-V', 'Johnson color from Hipparcos'], ['u', 'galactic space velocity in km/s, to/from the direction of the Galactic center'], ['v', 'galactic space velocity in km/s, galactic rotation'], ['w', 'galactic space velocity in km/s, to/from the North Galactic Pole'], ['Planet', 'letter designation for the planet'], ['p', 'planetary period in days from exoplanets.org'], ['M_p', 'planetary mass m*sin(i) in Jupiter masses from exoplanets.org'], ['e', 'planetary eccentricity from exoplanets.org'], ['a', 'planetary semi-major axis in AU from exoplanets.org'], ['T_eff', 'stellar effective temperature in Kelvin from exoplanets.org'], ['log(g)', 'stellar surface gravity from exoplanets.org'], ['M_s', 'stellar mass from exoplanets.org'], ['v*sin(i)', 'equatorial velocity of the star in km/s from exoplanets.org)']];
                 $scope.elements = {
                     'YH': 'Y',
@@ -414,6 +412,7 @@
                 // TODO: Update URL to make it sharable
                 // $location.search({"search": "hip>100"});
 
+                $scope.parseFloat = parseFloat;
                 let pageNumber = 0, pageSize = 25;
 
                 function fetchStars() {
@@ -731,11 +730,11 @@
 
                 $scope.updateChart = function () {
                     /*if ($scope.activeChart === 4) {
-                        $scope.chart.graphs = [columnGraph];
-                    }
-                    else {
-                        $scope.chart.graphs = [xyGraph];
-                    }*/
+                     $scope.chart.graphs = [columnGraph];
+                     }
+                     else {
+                     $scope.chart.graphs = [xyGraph];
+                     }*/
                     switch ($scope.activeChart) {
                         case 1:
                             var hips = Object.keys($scope.stars);
