@@ -8,7 +8,9 @@ These environment variables should be set before starting the server:
 - DB_USERNAME => Username to connect to on the database server
 - DB_PASSWORD => Password of the database user connecting to on the database server
 
-Run the file Server.py to start the flask web server
+Run the file Server.py to start the flask web server.
+
+The Schema/ folder has SQL required to set up the database. Run the files in the increasing order of number.
 
 # Tech Stack
 
