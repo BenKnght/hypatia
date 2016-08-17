@@ -62,15 +62,20 @@
                 </div>
 
                 <input style="width: 81.67%" type="text" class="form-control col-md-9 col-xs-9 col-sm-9"
-                       id="search" placeholder="Filter criteria" ng-focus="openSuggestions()"
+                       id="search" placeholder="Filter criteria"
                        data-toggle="popover" data-placement="top" data-container="body" data-trigger="hover focus"
                        data-html="true" title="Need help? Readme" ng-model="filterText"
                        data-content="you can try any of these,<ul><li>hip = '7444'</li><li>dist > 20 and disk = 'thin'</li><li>rascension > 300 or declination < 50</li></ul>">
                 <button type="submit" style="margin-left: 10px;" class="btn btn-primary col-md-1 col-xs-1 col-sm-1">
                     Filter
                 </button>
-                <button type="submit" style="margin-left: 10px;" class="btn btn-primary col-md-1 col-xs-1 col-sm-1">
+                <button ng-show="renderTable" ng-click="renderTable = false" type="button" style="margin-left: 10px;"
+                        class="btn btn-primary col-md-1 col-xs-1 col-sm-1">
                     Hide Table
+                </button>
+                <button ng-hide="renderTable" ng-click="renderTable = true" type="button" style="margin-left: 10px;"
+                        class="btn btn-primary col-md-1 col-xs-1 col-sm-1">
+                    Show Table
                 </button>
                 <div class="clearfix"></div>
             </form>
@@ -259,7 +264,7 @@
 
             <div class="table-responsive">
                 <table id="stars" class="table table-condensed table-bordered table-striped"
-                       style="border-collapse: collapse">
+                       style="border-collapse: collapse" ng-if="renderTable">
                     <thead>
                     <tr>
                         <th colspan="{{ columns.length }}">Showing {{cStars()}} stars</th>
@@ -422,7 +427,8 @@
                 $scope.c4_xaxis_den = 'FeH';
                 $scope.c4_yaxis = 'rfreq';
                 $scope.zaxis_num = 'FeH';
-                $scope.zaxis_den = 'H';
+                $scope.zaxis_den = 'AlH';
+                $scope.renderTable = false;
 
                 // TODO: Update URL to make it sharable
                 // $location.search({"search": "hip>100"});
@@ -547,7 +553,7 @@
                         for (let star in starComposition) {
                             let composition = starComposition[star];
                             try {
-                                let z = $scope.agg === 'mean' ? getPlotValue(composition, ['z_xaxis_num', 'z_xaxis_den'], 'avg') : getPlotValue(composition, ['z_xaxis_num', 'z_xaxis_den'], 'mdn');
+                                let z = $scope.agg === 'mean' ? getPlotValue(composition, ['zaxis_num', 'zaxis_den'], 'avg') : getPlotValue(composition, ['zaxis_num', 'zaxis_den'], 'mdn');
                                 points.push({
                                     "z": z,
                                     "star": star
@@ -561,7 +567,7 @@
                         let min = 0, max = 0;
                         [min, max] = minMaxForRange(points, 'z');
                         for (let p of points) {
-                            $scope.stars[p['star']]['color'] = bulletColor(p['x'], min, max);
+                            $scope.stars[p['star']]['color'] = bulletColor(p['z'], min, max);
                         }
                         deferred.resolve();
                     }, function (err) {
@@ -624,7 +630,7 @@
                                 x: x,
                                 y: y,
                                 value: `Star: ${hip}<br />${xlabel}: ${x}<br />${ylabel}: ${y}`,
-                                color: $scope.stars[star]['color']
+                                color: $scope.stars[hip]['color']
                             });
                         }
                         catch (err) {
@@ -672,7 +678,7 @@
                                     x: x,
                                     y: y,
                                     value: `${hip} [${planet['name']}]<br />${xlabel}: ${x}<br />${ylabel}: ${y}`,
-                                    color: $scope.stars[star]['color']
+                                    color: $scope.stars[hip]['color']
                                 });
                             }
                         }
@@ -892,7 +898,9 @@
                 function invokeFilters() {
                     pageNumber = 0; // reset page
                     $scope.stars = {}; // clear stars to make way for new set
-                    return fetchStars();
+                    fetchStars().then(function () {
+                        $scope.updateChart();
+                    });
                 }
 
                 // Charting
@@ -938,7 +946,7 @@
                         data: [{title: "Low", color: "#cc0000"}, {title: "Medium", color: "#00cc00"}, {
                             title: "High",
                             color: "#5555cc"
-                        }],
+                        }, {title: "NA", color: "#FF6600"}],
                         divId: "legend"
                     }
                 };
