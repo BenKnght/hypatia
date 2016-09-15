@@ -347,66 +347,74 @@
 
             app.controller('VisualizationController', function ($scope, $location, StarService, PlotService, $q, PlanetService) {
 
-                $scope.columns = ['hip', 'hd', 'bd', 'rascension', 'declination', 'x', 'y', 'z', 'dist',
+                $scope.columns = ['hip', 'hd', 'bd', 'RA', 'Dec', 'x', 'y', 'z', 'dist',
                     'disk', 'spec', 'vmag', 'bv', 'u', 'v', 'w', 'planet', 'p', 'm_p', 'e', 'a', 'teff', 'logg', 'mass', 'vsini']; // 'hr', 'multiple_planets'
-                $scope.columns_meta = [['HIP', 'Hipparcos Catalog identifier'], ['HD', 'Henry Draper Catalogue identifier'], ['BD', 'Bonner Durchmusterung identifier'], ['RA', 'right ascension, Epoch=J2000 from Hipparcos'], ['Dec', 'Declination, Epoch=J2000 from Hipparcos'], ['X', 'x position in pc, dist*cos(dec)*cos(ra)'], ['Y', 'y position in pc, dist*cos(dec)*sin(ra)'], ['Z ', 'z position in pc, dist*sin(dec)'], ['dist', 'distance from the Sun in pc'], ['disk', 'thin or thick based on the kinematic prescription in Bensby et al.', '2003) '], ['Spec Type', 'spectral type from Hipparcos'], ['V', 'V magnitude from Hipparcos'], ['B-V', 'Johnson color from Hipparcos'], ['u', 'galactic space velocity in km/s, to/from the direction of the Galactic center'], ['v', 'galactic space velocity in km/s, galactic rotation'], ['w', 'galactic space velocity in km/s, to/from the North Galactic Pole'], ['Planet', 'letter designation for the planet'], ['p', 'planetary period in days from exoplanets.org'], ['M_p', 'planetary mass m*sin(i) in Jupiter masses from exoplanets.org'], ['e', 'planetary eccentricity from exoplanets.org'], ['a', 'planetary semi-major axis in AU from exoplanets.org'], ['T_eff', 'stellar effective temperature in Kelvin from exoplanets.org'], ['log(g)', 'stellar surface gravity from exoplanets.org'], ['M_s', 'stellar mass from exoplanets.org'], ['v*sin(i)', 'equatorial velocity of the star in km/s from exoplanets.org)']];
+                $scope.columns_meta = [['HIP', 'Hipparcos Catalog identifier'], ['HD', 'Henry Draper Catalogue identifier'], ['BD', 'Bonner Durchmusterung identifier'], ['RA', 'right ascension, Epoch=J2000 from Hipparcos'], ['Dec', 'Declination, Epoch=J2000 from Hipparcos'], ['X', 'x position in pc (dist*cos(dec)*cos(ra))'], ['Y', 'y position in pc (dist*cos(dec)*sin(ra))'], ['Z ', 'z position in pc (dist*sin(dec))'], ['dist', 'distance from the Sun in pc'], ['disk', 'thin or thick based on the kinematic prescription in Bensby et al. 2003) '], ['Spec Type', 'spectral type from Hipparcos'], ['V', 'V magnitude from Hipparcos'], ['B-V', 'Johnson color from Hipparcos'], ['u', 'galactic space velocity in km/s, to/from the direction of the Galactic center'], ['v', 'galactic space velocity in km/s, galactic rotation'], ['w', 'galactic space velocity in km/s, to/from the North Galactic Pole'], ['Planet', 'letter designation for the planet'], ['p', 'planetary period in days from exoplanets.org'], ['M_p', 'planetary mass m*sin(i) in Jupiter masses from exoplanets.org'], ['e', 'planetary eccentricity from exoplanets.org'], ['a', 'planetary semi-major axis in AU from exoplanets.org'], ['T_eff', 'stellar effective temperature in Kelvin from exoplanets.org'], ['log(g)', 'stellar surface gravity from exoplanets.org'], ['M_s', 'stellar mass from exoplanets.org'], ['v*sin(i)', 'equatorial velocity of the star in km/s from exoplanets.org)']];
                 $scope.elements = {
-                    'YH': 'Y',
-                    'NiH': 'Ni',
-                    'KH': 'K',
-                    'LaH': 'La',
-                    'MgH': 'Mg',
-                    'RuH': 'Ru',
-                    'CeH': 'Ce',
-                    'CaIIH': 'CaII',
-                    'DyH': 'Dy',
-                    'MoH': 'Mo',
-                    'LaIIH': 'LaII',
-                    'NH': 'N',
-                    'EuH': 'Eu',
-                    'NaH': 'Na',
-                    'CeIIH': 'CeII',
-                    'LiH': 'Li',
-                    'NdIIH': 'NdII',
-                    'FeH': 'Fe',
-                    'SH': 'S',
-                    'TiH': 'Ti',
-                    'SmH': 'Sm',
-                    'EuIIH': 'EuII',
-                    'BaIIH': 'BaII',
-                    'SiH': 'Si',
-                    'ZrH': 'Zr',
-                    'CH': 'C',
-                    'ScH': 'Sc',
-                    'AlH': 'Al',
-                    'YIIH': 'YII',
-                    'VH': 'V',
-                    'PdH': 'Pd',
-                    'TiIIH': 'TiII',
-                    'PrH': 'Pr',
-                    'MnH': 'Mn',
-                    'GdH': 'Gd',
-                    'ScIIH': 'ScII',
-                    'SmIIH': 'SmII',
-                    'PH': 'P',
-                    'SrIIH': 'SrII',
-                    'AgH': 'Ag',
-                    'NdH': 'Nd',
-                    'BeH': 'Be',
-                    'OH': 'O',
-                    'SrH': 'Sr',
-                    'ZnH': 'Zn',
-                    'CrIIH': 'CrII',
-                    'HfH': 'Hf',
-                    'CaH': 'Ca',
-                    'VIIH': 'VII',
-                    'ZrIIH': 'ZrII',
-                    'CoH': 'Co',
-                    'CrH': 'Cr',
-                    'CuH': 'Cu',
+                    'H':'H',
+                    'LiH':'Li',
+                    'BeH':'Be',
+                    'CH':'C',
+                    'NH':'N',
+                    'OH':'O',
+                    'NaH':'Na',
+                    'MgH':'Mg',
+                    'AlH':'Al',
+                    'SiH':'Si',
+                    'PH':'P',
+                    'SH':'S',
+                    'KH':'K',
+                    'CaH':'Ca',
+                    'CaIIH':'CaII',
+                    'ScH':'Sc',
+                    'ScIIH':'ScII',
+                    'TiH':'Ti',
+                    'TiIIH':'TiII',
+                    'VH':'V',
+                    'VIIH':'VII',
+                    'CrH':'Cr',
+                    'CrIIH':'CrII',
+                    'MnH':'Mn',
+                    'FeH':'Fe',
+                    'CoH':'Co',
+                    'NiH':'Ni',
+                    'CuH':'Cu',
+                    'ZnH':'Zn',
+                    'SrH':'Sr',
+                    'SrIIH':'SrII',
+                    'YH':'Y',
+                    'YIIH':'YII',
+                    'ZrH':'Zr',
+                    'ZrIIH':'ZrII',
+                    'NbIIH':'NbII',
+                    'MoH':'Mo',
+                    'RuH':'Ru',
+                    'PdH':'Pd',
+                    'AgH':'Ag',
+                    'BaIIH':'BaII',
+                    'LaH':'La',
+                    'LaIIH':'LaII',
+                    'CeH':'Ce',
+                    'CeIIH':'CeII',
+                    'PrH':'Pr',
+                    'PrIIH':'PrII',
+                    'NdH':'Nd',
+                    'SmH':'Sm',
+                    'SmIIH':'SmII',
+                    'EuH':'Eu',
+                    'EuIIH':'EuII',
+                    'GdH':'Gd',
+                    'GdIIH':'GdII',
+                    'TbIIH':'TbII',
+                    'DyH':'Dy',
+                    'DyIIH':'DyII',
+                    'ErIIH':'ErII',
+                    'TmIIH':'TmII',
+                    'YbIIH':'YbII',
+                    'HfH':'Hf',
+                    'HfIIH':'HfIIH',
                     'PbH': 'Pb',
-                    'BaH': 'Ba',
-                    'H': 'H'
+                    'ThIIH':'ThII'
                 };
                 $scope.catalogs = ["Adamow et al. (2014)", "Adibekyan et al. (2012)", "Adibekyan et al. (2015)", "Allen & Porto de Mello (2011)", "Allende Prieto et al. (2004)", "Battistini et al. 2015", "Bensby et al. (2005)", "Bensby et al. 2014", "Bergemann et al. (2010)", "Bertran de Lis et al. (2015)", "Biazzo et al. (2012)", "Bodaghee et al. (2003)", "Boesgaard et al. (2011)", "Bond et al. (2006, 2008)", "Brewer & Carney (2006)", "Brugamyer et al. (2011)", "Bruntt et al. (2012)", "Caffau et al. (2011)", "Carretta et al. (2000)", "Castro et al. (1997)", "Castro et al. (1999)", "Chen et al. (2000)", "D'Orazi et al. (2012)", "da Silva et al. (2012)", "Delgado Mena et al. (2010)", "Ecuvillon et al. (2004)", "Ecuvillon et al. (2006)", "Edvardsson et al. (1993)", "Feltzing & Gustafsson (1998)", "Feltzing et al. (2007)", "Francois (1986)", "Francois (1988)", "Fulbright (2000)", "Galeev et al. (2004)", "Gebran et al. (2010)", "Gehren et al. (2004)", "Gehren et al. (2006)", "Gilli et al. (2006)", "Gonzalez & Laws (2007)", "Gonzalez et al. (2001)", "Gonzalez Hernandez et al. (2010)", "Gonzalez Hernandez et al. (2013)", "Gratton et al. (2000)", "Gratton et al. (2003)", "Gustafsson et al. (1999)", "Huang et al. (2005)", "Ishigaki et al. (2012)", "Ishigaki et al. (2013)", "Jofre et al. (2015)", "Jonsell et al. (2005)", "Kang et al. (2011)", "Karinkuzhi et al. (2014)", "Koch & Edvardsson (2002)", "Korotin et al. (2011)", "Laird (1985)", "Liu et al. (2012)", "Luck & Heiter (2005)", "Maldonado et al. (2013)", "Mann et al. 2013", "Mashonkina et al. (2006)", "Mashonkina et al. (2007)", "Mishenina et al. (2003)", "Mishenina et al. (2004)", "Mishenina et al. (2008)", "Mishenina et al. (2011)", "Mishenina et al. (2013)", "Mishenina et al. (2015)", "Mortier et al. (2013)", "Neuforge-Verheecke & Magain (1997)", "Neves et al. (2009)", "Nissen & Schuster (1997)", "Nissen & Schuster (2010)", "Nissen et al. (2011)", "Nissen et al. (2014)", "Nissen et al. (2015)", "Peterson et al. (2013)", "Petigura & Marcy (2011)", "Porto de Mello et al. (2008)", "Ramirez et al. (2007)", "Ramirez et al. (2009)", "Ramirez et al. (2012)", "Ramirez et al. (2014a)", "Ramirez et al. (2014b)", "Recio Blanco et al. (2012)", "Reddy et al. (2003)", "Reddy et al. (2006)", "Sadakane et al. (2002)", "Schuler et al. (2011)", "Shi et al. (2004)", "Shi et al. (2012)", "Sitnova et al. (2015)", "Stonkute et al. (2012)", "Stonkute et al. (2013)", "Takeda (2007), Takeda & Honda (2005)", "Takeda et al. (2005)", "Thevenin (1998)", "Trevisan et al. (2011)", "Valenti & Fischer (2005)", "Wang et al. (2011)", "Wu et al. (2015)", "Yan et al. (2015)", "Zenovience et al. (2014)", "Zhang & Zhao (2006)", "Zhao et al. (2002)"];
                 $scope.stars = {};
@@ -416,18 +424,18 @@
                 $scope.agg = 'median';
                 $scope.activeChart = 1;
                 $scope.xaxis_num = 'FeH';
-                $scope.yaxis_num = 'AlH';
+                $scope.yaxis_num = 'SiH';
                 $scope.xaxis_den = 'H';
                 $scope.yaxis_den = 'H';
                 $scope.c2_xaxis = 'dist';
                 $scope.c2_yaxis = 'uwsq';
                 $scope.c3_xaxis = 'e';
                 $scope.c3_yaxis = 'sma';
-                $scope.c4_xaxis_num = 'TiIIH';
-                $scope.c4_xaxis_den = 'FeH';
+                $scope.c4_xaxis_num = 'MgH';
+                $scope.c4_xaxis_den = 'SiH';
                 $scope.c4_yaxis = 'rfreq';
-                $scope.zaxis_num = 'FeH';
-                $scope.zaxis_den = 'AlH';
+                $scope.zaxis_num = 'CH';
+                $scope.zaxis_den = 'OH';
                 $scope.renderTable = false;
 
                 // TODO: Update URL to make it sharable

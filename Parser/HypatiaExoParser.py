@@ -108,9 +108,13 @@ class HypatiaExoParser(Parser):
 
     @staticmethod
     def handle_nulls(key, value):
-        if value == '999.0' and key != 'uvw':
+        try:
+            value_int = int(float(value))
+        except:
+            return value
+        if value == 999 and key != 'uvw':
             value = None
-        elif value.find('9999.0') >= 0 and key == 'uvw':
+        elif value == 9999 and key == 'uvw':
             value = None
         return value
 
