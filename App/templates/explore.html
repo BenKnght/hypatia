@@ -64,8 +64,8 @@
                 <input style="width: 81.67%" type="text" class="form-control col-md-9 col-xs-9 col-sm-9"
                        id="search" placeholder="Filter criteria"
                        data-toggle="popover" data-placement="top" data-container="body" data-trigger="hover focus"
-                       data-html="true" title="Need help? Readme" ng-model="filterText"
-                       data-content="you can try any of these,<ul><li>hip = '7444'</li><li>dist > 20 and disk = 'thin'</li><li>rascension > 300 or declination < 50</li></ul>">
+                       data-html="true" title="Examples" ng-model="filterText"
+                       data-content="you can try any of these,<ul><li>hip = 7444</li><li>dist > 20 and disk = 'thin'</li><li>RA > 300 or Dec < 50</li></ul>">
                 <button type="submit" style="margin-left: 10px;" class="btn btn-primary col-md-1 col-xs-1 col-sm-1">
                     Filter
                 </button>
@@ -347,7 +347,7 @@
 
             app.controller('VisualizationController', function ($scope, $location, StarService, PlotService, $q, PlanetService) {
 
-                $scope.columns = ['hip', 'hd', 'bd', 'RA', 'Dec', 'x', 'y', 'z', 'dist',
+                $scope.columns = ['hip', 'hd', 'bd', 'rascension','declination', 'x', 'y', 'z', 'dist',
                     'disk', 'spec', 'vmag', 'bv', 'u', 'v', 'w', 'planet', 'p', 'm_p', 'e', 'a', 'teff', 'logg', 'mass', 'vsini']; // 'hr', 'multiple_planets'
                 $scope.columns_meta = [['HIP', 'Hipparcos Catalog identifier'], ['HD', 'Henry Draper Catalogue identifier'], ['BD', 'Bonner Durchmusterung identifier'], ['RA', 'right ascension, Epoch=J2000 from Hipparcos'], ['Dec', 'Declination, Epoch=J2000 from Hipparcos'], ['X', 'x position in pc (dist*cos(dec)*cos(ra))'], ['Y', 'y position in pc (dist*cos(dec)*sin(ra))'], ['Z ', 'z position in pc (dist*sin(dec))'], ['dist', 'distance from the Sun in pc'], ['disk', 'thin or thick based on the kinematic prescription in Bensby et al. 2003) '], ['Spec Type', 'spectral type from Hipparcos'], ['V', 'V magnitude from Hipparcos'], ['B-V', 'Johnson color from Hipparcos'], ['u', 'galactic space velocity in km/s, to/from the direction of the Galactic center'], ['v', 'galactic space velocity in km/s, galactic rotation'], ['w', 'galactic space velocity in km/s, to/from the North Galactic Pole'], ['Planet', 'letter designation for the planet'], ['p', 'planetary period in days from exoplanets.org'], ['M_p', 'planetary mass m*sin(i) in Jupiter masses from exoplanets.org'], ['e', 'planetary eccentricity from exoplanets.org'], ['a', 'planetary semi-major axis in AU from exoplanets.org'], ['T_eff', 'stellar effective temperature in Kelvin from exoplanets.org'], ['log(g)', 'stellar surface gravity from exoplanets.org'], ['M_s', 'stellar mass from exoplanets.org'], ['v*sin(i)', 'equatorial velocity of the star in km/s from exoplanets.org)']];
                 $scope.elements = {

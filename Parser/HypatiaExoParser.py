@@ -23,9 +23,9 @@ class HypatiaExoParser(Parser):
         'vmag': 'vmag',
         'b-v': 'bv',
         'dist (pc)': 'dist',
-        'ra/dec': ['rascension', 'declination'],
-        'ra': 'rascension',
-        'dec': 'declination',
+        'ra/dec': ['RA', 'Dec'],
+        'ra': 'RA',
+        'dec': 'Dec',
         'position': 'doesnt matter',  # split into three keys (x, y, z) while parsing
         'disk component': 'disk',
         'uvw': 'doesnt matter',  # split into three keys (x, y, z) while parsing
